@@ -1,7 +1,9 @@
 import express from "express"
 import cors from "cors";
 import cookieParser from "cookie-parser"
+
 import userRoutes from "./routes/userRoutes.js"
+import captainRoutes from "./routes/userRoutes.js"
 import connectToDb from "./config/connectToDB.js"
 
 
@@ -17,6 +19,7 @@ app.use(cookieParser());
 
 
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/captains", captainRoutes);
 
 
 export default app ;
