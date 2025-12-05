@@ -1,7 +1,7 @@
 import express from "express" ;
 import {authUser} from "../middleware/authMiddleware.js";
 import {query} from "express-validator";
-
+import {getCoordinates , getDistanceTime , getAutoCompleteSuggestions} from "../controllers/mapController.js"
 
 const router = express.Router();
 
