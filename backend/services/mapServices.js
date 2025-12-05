@@ -1,7 +1,8 @@
 import axios from "axios";
-
+import dotenv from "dotenv";
+dotenv.config() ;
 const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org";
-const ORS_API_KEY = process.env.ORS_API_KEY;
+const ORS_KEY = process.env.ORS_API_KEY;
 
 
 // 1️⃣ Get Coordinates (address → lat,lng)
@@ -53,7 +54,7 @@ export const getDistanceAndTime = async (origin, destination) => {
             },
             {
                 headers: {
-                    "Authorization": ORS_API_KEY,
+                    "Authorization": ORS_KEY,
                     "Content-Type": "application/json"
                 }
             }
