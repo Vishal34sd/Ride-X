@@ -1,6 +1,7 @@
 import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config() ;
+import captainModel from "../models/captainModel.js"
 const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org";
 const ORS_KEY = process.env.ORS_API_KEY;
 
@@ -96,3 +97,14 @@ export const getAutoCompleteResults = async (input) => {
         throw error;
     }
 };
+
+export const getCaptainInTheRadius = async(ltd , lng , radius)=>{
+    const captains = await captainModel.find({
+        location : {
+            $geoWithin:{
+                $centerSphere : [[lng , ltd] , radius/6378.1]
+            }
+        }
+    });
+    return captains ;
+}

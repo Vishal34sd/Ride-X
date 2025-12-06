@@ -14,5 +14,5 @@ router.post("/confirm"  , authCaptain , body("rideId").isMongoId().withMessage("
 router.get("/start-ride" , authCaptain , query("rideId").isMongoId().withmEssage("Invalid rideId") , 
 query("otp").isString().withLength({min : 6 , max:6}).withMessage("invalid otp" , startRide));
 
-router.post("/emd-ride" , authCaptain , body("rideId").isMongoId().withMessage("inavalid ride id ") , endRide);
+router.post("/end-ride" , authCaptain , body("rideId").isMongoId().withMessage("inavalid ride id ") , endRide);
 export default router ;
