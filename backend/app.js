@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser"
 import userRoutes from "./routes/userRoutes.js"
 import captainRoutes from "./routes/userRoutes.js"
 import mapRoutes from "./routes/mapRoutes.js"
+import rideRoutes from "./routes/rideRoutes.js"
 import connectToDb from "./config/connectToDB.js"
 
 
@@ -22,6 +23,7 @@ app.use(cookieParser());
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/captains", captainRoutes);
 app.use("/api/v1/maps", mapRoutes);
+app.use("/api/v1/rises" , rideRoutes)
 
 
 export default app ;
