@@ -1,7 +1,5 @@
 import userModel from "../models/userModel.js";
 import rideModel from "../models/rideModel.js";
-import bcrypt from "bcrypt";
-import crypto from "crypto" ;
 import { getDistanceAndTime } from "./mapService.js";
 
 export const getFareService = async ({ pickup, destination, vehicleType }) => {
@@ -62,13 +60,60 @@ export const createRideService = async({user , pickup , destination , vehicleTyp
 }
 
 export const confirmRideService = async({rideId , captain})=>{
+    await rideModel.findOneAndUpdate({
+        _id: rideId
+    } , {
+        status : "accepted",
+        captain : captain._id
+    })
 
+    const ride = await rideModel.findOne({
+        _id :rideId,
+        captain : captain._id
+    }).populate("user").populate("captain".select("+otp"));
+
+    return ride ;
 }
 
 export const startRideService = async({rideId , otp , captain})=>{
+    const ride = await rideModel.findOne({
+        _id :rideId,
+        captain : captain._id
+    }).populate("user").populate("captain".select("+otp"));
 
+    await rideModel.findOneAndUpdate({
+        _id :rideId
+    },{
+        status : "ongoing"
+    });
+
+    return ride ;
 }
 
 export const endRideService = async({rideId , captain})=>{
+    if(!rideId){
+        throw new Error("rideId is required");
+    }
 
+    if(!captain || !captain._id){
+        throw new Error("Valid captain is required");
+    }
+
+    const ride = await rideModel.findOne({
+        _id : rideId,
+        captain : captain._id
+    }).populate("user").populate("captain".select("+otp"));
+
+    if(!ride){
+        throw new Error("Ride not found for this captain");
+    }
+
+    if(ride.status !== "ongoing"){
+        throw new Error("Ride must be ongoing to be completed");
+    }
+
+    ride.status = "completed";
+    await ride.save();
+
+    return ride ;
 }
