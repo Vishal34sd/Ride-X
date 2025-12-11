@@ -1,4 +1,5 @@
 import React from "react";
+import {Link} from "react-router-dom";
 
 const LandingPage = () => {
   return (
@@ -18,9 +19,9 @@ const LandingPage = () => {
         <div className="flex space-x-2 text-[15px] items-center">
           <button className=" hover:bg-gray-700 rounded-full  px-5 py-2 text-white">Help</button>
           <button className="hover:bg-gray-700 rounded-full  px-5 py-2 text-white">Log in</button>
-          <button className="bg-white text-black px-5 py-2 rounded-full font-medium">
+          <Link to="/register"><button className="bg-white text-black px-5 py-2 rounded-full font-medium">
             Sign up
-          </button>
+          </button></Link>
         </div>
       </nav>
 
@@ -58,7 +59,7 @@ const LandingPage = () => {
             />
           </div>
 
-          <button className="mt-6 bg-black text-white px-6 py-3 rounded-lg font-medium text-[15px]">
+          <button className="mt-6 bg-black text-white px-6 py-3 rounded-lg font-medium text-[15px] hover:cursor-pointer">
             See prices
           </button>
         </div>

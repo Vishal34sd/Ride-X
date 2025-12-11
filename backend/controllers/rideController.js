@@ -20,7 +20,7 @@ export const createRide = async(req , res)=>{
         const otp = "";
 
         const rideWithUser = await rideModel.findOne({_id:ride._id}).populate("user");
-        capTAINSInRadius.map(captain.socketId , {
+        captainInRadius.map(captain.socketId , {
             event : "new-ride" ,
             data : rideWithUser
         });
