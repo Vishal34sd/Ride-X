@@ -14,7 +14,7 @@ export default function UserHome() {
   const pickupTimer = useRef(null);
   const destinationTimer = useRef(null);
 
-  const [vehicle, setVehicle] = useState(""); // NEW — car/auto/bike
+  const [vehicleType, setVehicleType] = useState(""); 
   const [fare, setFare] = useState(null);
 
   const [riderType, setRiderType] = useState("me");
@@ -76,26 +76,27 @@ export default function UserHome() {
     return () => map.remove();
   }, []);
 
-  // ⭐ Get fare based on selected vehicle
+  // ⭐ Get fare from BACKEND
   const handleGetFare = async () => {
-    if (!pickup || !destination || !vehicle) {
+    if (!pickup || !destination || !vehicleType) {
       alert("Please enter pickup, destination and select vehicle");
       return;
     }
 
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/v1/maps/get-fare",
+        "http://localhost:8080/api/v1/rides/get-fare",
         {
           params: {
             pickup,
             destination,
-            vehicle,
+            vehicleType, // IMPORTANT FIX
           },
         }
       );
 
-      setFare(res.data.fare);
+      console.log("FARE RESPONSE:", res.data);
+      setFare(res.data.fareData); // FIXED
     } catch (error) {
       console.log("Fare Error:", error);
       alert("Could not fetch fare!");
@@ -109,7 +110,7 @@ export default function UserHome() {
     alert(
       `Ride booked for ${
         riderType === "me" ? "YOU" : "SOMEONE ELSE"
-      } — Vehicle: ${vehicle.toUpperCase()} — Fare: ₹${fare}`
+      } — Vehicle: ${vehicleType.toUpperCase()} — Fare: ₹${fare}`
     );
   };
 
@@ -126,7 +127,7 @@ export default function UserHome() {
             <h2 className="text-3xl font-bold mb-2">Book your ride</h2>
             <p className="text-gray-600 mb-6">Enter your trip details</p>
 
-            {/* PICKUP INPUT */}
+            {/* PICKUP */}
             <div className="relative">
               <input
                 type="text"
@@ -154,7 +155,7 @@ export default function UserHome() {
               )}
             </div>
 
-            {/* DESTINATION INPUT */}
+            {/* DESTINATION */}
             <div className="relative">
               <input
                 type="text"
@@ -184,8 +185,8 @@ export default function UserHome() {
 
             {/* SELECT VEHICLE */}
             <select
-              value={vehicle}
-              onChange={(e) => setVehicle(e.target.value)}
+              value={vehicleType}
+              onChange={(e) => setVehicleType(e.target.value)}
               className="w-full border border-gray-300 px-4 py-3 rounded-lg mb-4"
             >
               <option value="">Select Vehicle</option>
@@ -194,7 +195,7 @@ export default function UserHome() {
               <option value="car">Car</option>
             </select>
 
-            {/* GET FARE BUTTON */}
+            {/* GET FARE */}
             <button
               onClick={handleGetFare}
               className="w-full bg-black text-white py-3 rounded-lg mb-4 text-lg font-medium"
@@ -221,7 +222,7 @@ export default function UserHome() {
           </div>
         </div>
 
-        {/* MAP PANEL */}
+        {/* MAP */}
         <div className="w-1/2 bg-gray-200 m-5 h-[605px] rounded-xl overflow-hidden">
           <div id="map" className="w-full h-full"></div>
         </div>

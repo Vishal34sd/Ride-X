@@ -36,10 +36,8 @@ export const getAddressCoordinates = async (address) => {
 };
 
 
-// 2️⃣ Get Distance & Time
 export const getDistanceAndTime = async (origin, destination) => {
     try {
-        // First fetch coords for both
         const originCoords = await getAddressCoordinates(origin);
         const destinationCoords = await getAddressCoordinates(destination);
 
@@ -64,8 +62,8 @@ export const getDistanceAndTime = async (origin, destination) => {
         const data = response.data.routes[0].summary;
 
         return {
-            distance_km: (data.distance / 1000).toFixed(2),
-            duration_min: (data.duration / 60).toFixed(2)
+            distanceMeters: data.distance,     // 👈 REQUIRED BY FARE SERVICE
+            durationSeconds: data.duration     // optional
         };
 
     } catch (error) {
