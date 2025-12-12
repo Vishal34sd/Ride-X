@@ -62,8 +62,8 @@ export const getDistanceAndTime = async (origin, destination) => {
         const data = response.data.routes[0].summary;
 
         return {
-            distanceMeters: data.distance,     // 👈 REQUIRED BY FARE SERVICE
-            durationSeconds: data.duration     // optional
+            distanceMeters: data.distance,     
+            durationSeconds: data.duration     
         };
 
     } catch (error) {

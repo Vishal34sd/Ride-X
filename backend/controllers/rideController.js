@@ -41,12 +41,18 @@ export const getFare = async(req, res)=>{
 
     const { pickup , destination, vehicleType } = req.query ;
     try{
-        const fare = await getFareService({ pickup , destination, vehicleType });
-        res.status(200).json({fareData : fare})
+        const {distanceKm , durationSeconds , fare} = await getFareService({ pickup , destination, vehicleType });
+        res.status(200).json({
+            fareData: {
+                distanceKm,
+                durationSeconds,
+                fare
+            }
+        });
     }
     catch(e){
         console.log(e);
-        res.status(404).json({error : "fair not found "})
+        res.status(404).json({error : "fare not found "});
     }
 }
 

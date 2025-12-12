@@ -26,7 +26,7 @@ export const getFareService = async ({ pickup, destination, vehicleType }) => {
     };
 
     // get distance from your map service
-    const { distanceMeters } = await getDistanceAndTime(pickup, destination);
+    const { distanceMeters , durationSeconds } = await getDistanceAndTime(pickup, destination);
     const distanceKm = distanceMeters / 1000;
 
     const rawFare = baseFare[vehicleType] + perKmRate[vehicleType] * distanceKm;
@@ -34,7 +34,7 @@ export const getFareService = async ({ pickup, destination, vehicleType }) => {
     
     const fare = Math.round(rawFare * 100) / 100;
 
-    return fare;
+    return {distanceKm , durationSeconds , fare};
 };
 
 export const generateOtp = () => {

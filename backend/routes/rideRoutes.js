@@ -8,7 +8,16 @@ const router = express.Router();
 
 router.post("/create" , rideValidation , authUser ,  createRide);
 
-router.get("/get-fare" , rideFairValidation ,  getFare );
+router.get(
+  "/get-fare",
+  [
+    query("pickup").notEmpty().isLength({ min: 3 }),
+    query("destination").notEmpty().isLength({ min: 3 }),
+    query("vehicleType").notEmpty(),
+  ],
+  getFare
+);
+
 
 router.post("/confirm"  , 
 	authCaptain , 
