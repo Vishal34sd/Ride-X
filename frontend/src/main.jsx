@@ -7,6 +7,7 @@ import UserRegister from "./pages/UserRegister.jsx"
 import CaptainRegister from "./pages/CaptainRegister.jsx"
 import LandingPage from "./pages/LandingPage";
 import UserHomePage from "./pages/UserHomePage.jsx"
+import CaptainDashbaord from "./pages/CaptainDashboard.jsx"
 import CommonLogin from "./pages/CommonLogin.jsx"
 
 
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
      {
           path : "/homepage-user",
           element : <UserHomePage/>
+     },
+      {
+          path : "/homepage-captain",
+          element : <CaptainDashbaord/>
      }
 ])
 createRoot(document.getElementById('root')).render(

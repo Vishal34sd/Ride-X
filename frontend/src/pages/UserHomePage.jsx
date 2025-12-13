@@ -3,8 +3,9 @@ import Navbar from "../components/Navbar";
 import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import useBookRide from "../hooks/useBookRide";
 
-export default function UserHome() {
+export default function UserHomePage() {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
 
@@ -20,7 +21,13 @@ export default function UserHome() {
   const [pickupCoords, setPickupCoords] = useState(null);
   const [destinationCoords, setDestinationCoords] = useState(null);
 
-  // 🔍 Suggestion API
+  const mapRef = useRef(null);
+  const pickupMarkerRef = useRef(null);
+  const destinationMarkerRef = useRef(null);
+  const routeRef = useRef(null);
+
+  const { bookRide } = useBookRide();
+
   const fetchSuggestions = async (query) => {
     try {
       const res = await axios.get(
@@ -34,7 +41,6 @@ export default function UserHome() {
     }
   };
 
-  // 📌 Pickup input handler
   const handlePickupChange = (e) => {
     const value = e.target.value;
     setPickup(value);
@@ -43,13 +49,11 @@ export default function UserHome() {
     clearTimeout(pickupTimer.current);
     pickupTimer.current = setTimeout(async () => {
       if (value.length >= 3) {
-        const results = await fetchSuggestions(value);
-        setPickupSuggestions(results);
+        setPickupSuggestions(await fetchSuggestions(value));
       } else setPickupSuggestions([]);
     }, 400);
   };
 
-  // 📌 Destination input handler
   const handleDestinationChange = (e) => {
     const value = e.target.value;
     setDestination(value);
@@ -58,13 +62,11 @@ export default function UserHome() {
     clearTimeout(destinationTimer.current);
     destinationTimer.current = setTimeout(async () => {
       if (value.length >= 3) {
-        const results = await fetchSuggestions(value);
-        setDestinationSuggestions(results);
+        setDestinationSuggestions(await fetchSuggestions(value));
       } else setDestinationSuggestions([]);
     }, 400);
   };
 
-  // 🗺 Initialize Map
   useEffect(() => {
     const map = L.map("map").setView([28.6139, 77.209], 12);
 
@@ -72,10 +74,41 @@ export default function UserHome() {
       maxZoom: 19,
     }).addTo(map);
 
+    mapRef.current = map;
     return () => map.remove();
   }, []);
 
-  // 💰 Get Fare
+  useEffect(() => {
+    if (!mapRef.current || !pickupCoords || !destinationCoords) return;
+
+    const map = mapRef.current;
+
+    if (pickupMarkerRef.current) map.removeLayer(pickupMarkerRef.current);
+    if (destinationMarkerRef.current)
+      map.removeLayer(destinationMarkerRef.current);
+    if (routeRef.current) map.removeLayer(routeRef.current);
+
+    pickupMarkerRef.current = L.marker([
+      pickupCoords.lat,
+      pickupCoords.lng,
+    ]).addTo(map);
+
+    destinationMarkerRef.current = L.marker([
+      destinationCoords.lat,
+      destinationCoords.lng,
+    ]).addTo(map);
+
+    routeRef.current = L.polyline(
+      [
+        [pickupCoords.lat, pickupCoords.lng],
+        [destinationCoords.lat, destinationCoords.lng],
+      ],
+      { color: "blue", weight: 5 }
+    ).addTo(map);
+
+    map.fitBounds(routeRef.current.getBounds(), { padding: [50, 50] });
+  }, [pickupCoords, destinationCoords]);
+
   const handleGetFare = async () => {
     if (!pickup || !destination || !vehicleType) {
       alert("Please fill pickup, destination & vehicle");
@@ -86,44 +119,50 @@ export default function UserHome() {
       const res = await axios.get(
         "http://localhost:8080/api/v1/rides/get-fare",
         {
-          params: {
-            pickup,
-            destination,
-            vehicleType,
-          },
+          params: { pickup, destination, vehicleType },
         }
       );
-
-      console.log("FARE RESPONSE:", res.data);
       setFareData(res.data.fareData);
-    } catch (error) {
-      console.log("Fare Error:", error);
+    } catch {
       alert("Could not fetch fare!");
     }
   };
 
-  // 🚗 Book Ride
-  const handleBookRide = () => {
+   const handleBookRide = async () => {
     if (!fareData) return alert("Please fetch fare first.");
 
-    alert(
-      `Ride booked!\nVehicle: ${vehicleType.toUpperCase()}\nFare: ₹${fareData.fare}\nDistance: ${fareData.distanceKm.toFixed(
-        2
-      )} km\nTime: ${(fareData.durationSeconds / 60).toFixed(2)} minutes`
-    );
+    try {
+      const ride = await bookRide({
+        pickup,
+        destination,
+        vehicleType,
+      });
+
+      const totalMinutes = Math.floor(fareData.durationSeconds / 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      alert(
+        `Ride booked!
+Ride ID: ${ride._id}
+Vehicle: ${vehicleType.toUpperCase()}
+Fare: ₹${fareData.fare}
+Distance: ${fareData.distanceKm.toFixed(2)} km
+Time: ${hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`}`
+      );
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
     <>
       <Navbar />
-
       <div className="min-h-screen flex bg-white">
-        {/* LEFT SIDE */}
         <div className="w-1/2 p-10">
           <div className="border border-gray-300 rounded-xl p-8 shadow-sm">
             <h2 className="text-3xl font-bold mb-2">Book your ride</h2>
 
-            {/* PICKUP */}
             <div className="relative">
               <input
                 type="text"
@@ -132,7 +171,6 @@ export default function UserHome() {
                 onChange={handlePickupChange}
                 className="w-full border px-4 py-3 rounded-lg mb-4"
               />
-
               {pickupSuggestions.length > 0 && (
                 <div className="absolute w-full bg-white border rounded-lg shadow-md z-50">
                   {pickupSuggestions.map((item, i) => (
@@ -153,7 +191,6 @@ export default function UserHome() {
               )}
             </div>
 
-            {/* DESTINATION */}
             <div className="relative">
               <input
                 type="text"
@@ -162,7 +199,6 @@ export default function UserHome() {
                 onChange={handleDestinationChange}
                 className="w-full border px-4 py-3 rounded-lg mb-4"
               />
-
               {destinationSuggestions.length > 0 && (
                 <div className="absolute w-full bg-white border rounded-lg shadow-md z-50">
                   {destinationSuggestions.map((item, i) => (
@@ -183,7 +219,6 @@ export default function UserHome() {
               )}
             </div>
 
-            {/* VEHICLE SELECT */}
             <select
               value={vehicleType}
               onChange={(e) => {
@@ -198,7 +233,6 @@ export default function UserHome() {
               <option value="car">Car</option>
             </select>
 
-            {/* GET FARE BUTTON */}
             <button
               onClick={handleGetFare}
               className="w-full bg-black text-white py-3 rounded-lg mb-4"
@@ -206,7 +240,6 @@ export default function UserHome() {
               Get Fare
             </button>
 
-            {/* SHOW FARE */}
             {fareData && (
               <div className="text-lg font-semibold space-y-2 mb-6">
                 <p>
@@ -215,31 +248,36 @@ export default function UserHome() {
                     ₹{fareData.fare}
                   </span>
                 </p>
-
                 <p>
                   📍 <b>Distance:</b> {fareData.distanceKm.toFixed(2)} km
                 </p>
-
                 <p>
                   ⏱ <b>Time:</b>{" "}
-                  {(fareData.durationSeconds / 60).toFixed(2)} minutes
+                  {(() => {
+                    const totalMinutes = Math.floor(
+                      fareData.durationSeconds / 60
+                    );
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    return hours > 0
+                      ? `${hours} hr ${minutes} min`
+                      : `${minutes} min`;
+                  })()}
                 </p>
               </div>
             )}
           </div>
 
-          {/* ⭐ BOOK BUTTON OUTSIDE THE FORM ⭐ */}
           {fareData && (
             <button
               onClick={handleBookRide}
-              className="w-1/3 ml-52 mt-12 bg-black text-white py-4 rounded-xl text-lg font-bold shadow-md hover:bg-gray-900 transition mt-4"
+              className="w-1/3 ml-52 mt-12 bg-black text-white py-4 rounded-xl text-lg font-bold shadow-md hover:bg-gray-900 transition"
             >
               Book Ride
             </button>
           )}
         </div>
 
-        {/* MAP */}
         <div className="w-1/2 m-5 bg-gray-200 h-[605px] rounded-xl overflow-hidden">
           <div id="map" className="w-full h-full"></div>
         </div>

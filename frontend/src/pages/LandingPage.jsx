@@ -92,7 +92,7 @@ const LandingPage = () => {
 
         <div className="flex space-x-2 text-white">
           <button className="hover:bg-gray-700 rounded-full px-5 py-2">Help</button>
-          <button className="hover:bg-gray-700 rounded-full px-5 py-2">Log in</button>
+          <Link to ="/login"><button className="hover:bg-gray-700 rounded-full px-5 py-2">Log in</button></Link>
           <Link to="/register">
             <button className="bg-white text-black px-5 py-2 rounded-full">Sign up</button>
           </Link>

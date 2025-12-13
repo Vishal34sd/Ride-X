@@ -45,19 +45,30 @@ export const generateOtp = () => {
     return otp.toString();
 }
 
-export const createRideService = async({ user , pickup , destination , vehicleType})=>{
-    const fare = await getFareService({ pickup , destination, vehicleType });
+export const createRideService = async ({
+  user,
+  pickup,
+  destination,
+  vehicleType,
+}) => {
+  const fareData = await getFareService({
+    pickup,
+    destination,
+    vehicleType,
+  });
 
-    const ride = await rideModel.create({
-        user ,
-        pickup , 
-        destination ,
-        vehicleType ,
-        otp : generateOtp(),
-        fare
-    });
-    return ride ;
-}
+  const ride = await rideModel.create({
+    user,
+    pickup,
+    destination,
+    fare: fareData.fare,
+    distance: fareData.distanceKm,
+    duration: fareData.durationSeconds,
+    status: "pending",
+  });
+
+  return ride;
+};
 
 export const confirmRideService = async({rideId , captain})=>{
     await rideModel.findOneAndUpdate({
