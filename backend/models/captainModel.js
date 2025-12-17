@@ -28,7 +28,7 @@ const captainSchema = new mongoose.Schema({
         type : String ,
         unique : true ,
         required : true ,
-        select : false ,
+        
 
     },
     socketId : {

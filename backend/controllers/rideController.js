@@ -6,7 +6,7 @@ import rideModel from "../models/rideModel.js";
 
 export const createRide = async (req, res) => {
   try {
-    // 1️⃣ Validate request
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -45,7 +45,7 @@ export const createRide = async (req, res) => {
     captains.forEach((captain) => {
       if (captain.socketId) {
         sendMessageToSocketId(captain.socketId, {
-          event: "new-ride",
+          event: "ride-confirmed",
           data: {
             _id: populatedRide._id,
             pickup: populatedRide.pickup,
@@ -87,26 +87,31 @@ export const getFare = async(req, res)=>{
     }
 }
 
-export const confirmRide = async(req, res) =>{
-    const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors: errors.array()});
-    }
+export const confirmRide = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-    const {rideId} = req.body;
-    try{
-        const ride = await confirmRideService({rideId , captain : req.captain});
+  const { rideId } = req.body;
 
-        sendMessageToSocketId(ride.user.socketId , {
-            event : "new-ride",
-            data : ride
-        });
-        return res.status(200).json({rideData : ride});
-    }
-    catch(e){
-        console.log(e);
-    }
-}
+  try {
+    const ride = await confirmRideService({
+      rideId,
+      captain: req.captain,
+    });
+
+    sendMessageToSocketId(ride.user.socketId, {
+      event: "ride-confirmed",
+      data: ride,
+    });
+
+    res.status(200).json({ rideData: ride });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Ride confirmation failed" });
+  }
+};
 
 export const startRide = async(req , res)=>{
     const errors = validationResult(req);

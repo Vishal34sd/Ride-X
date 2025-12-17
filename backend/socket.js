@@ -4,7 +4,7 @@ import captainModel from "./models/captainModel.js";
 
 let io;
 
-function initializeSocket(server) {
+export const initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: "*",
@@ -13,62 +13,72 @@ function initializeSocket(server) {
   });
 
   io.on("connection", (socket) => {
+    console.log("🟢 Socket connected:", socket.id);
+
     socket.on("join", async ({ userId, userType }) => {
+      console.log("➡️ JOIN EVENT RECEIVED:", { userId, userType, socketId: socket.id });
+
       try {
-        if (!userId || !userType) return;
+        if (!userId || !userType) {
+          console.log("❌ JOIN FAILED: missing userId or userType");
+          return;
+        }
 
         if (userType === "user") {
           await userModel.findByIdAndUpdate(userId, {
             socketId: socket.id,
           });
+          console.log("✅ USER SOCKET SAVED:", userId, socket.id);
         }
 
         if (userType === "captain") {
           await captainModel.findByIdAndUpdate(userId, {
             socketId: socket.id,
           });
+          console.log("✅ CAPTAIN SOCKET SAVED:", userId, socket.id);
         }
-      } catch (error) {
-        console.error(error);
-      }
-    });
-
-    socket.on("update-location-captain", async ({ userId, location }) => {
-      try {
-        if (!userId || !location) return;
-
-        await captainModel.findByIdAndUpdate(userId, {
-          location: {
-            lat: location.lat,
-            lng: location.lng,
-          },
-        });
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error("❌ JOIN ERROR:", err);
       }
     });
 
     socket.on("disconnect", async () => {
-      try {
-        await userModel.updateMany(
-          { socketId: socket.id },
-          { $unset: { socketId: "" } }
-        );
+      console.log("🔴 Socket disconnected:", socket.id);
 
-        await captainModel.updateMany(
-          { socketId: socket.id },
-          { $unset: { socketId: "" } }
-        );
-      } catch (error) {
-        console.error(error);
-      }
+      const userResult = await userModel.updateMany(
+        { socketId: socket.id },
+        { $unset: { socketId: "" } }
+      );
+
+      const captainResult = await captainModel.updateMany(
+        { socketId: socket.id },
+        { $unset: { socketId: "" } }
+      );
+
+      console.log("🧹 SOCKET CLEANUP:", {
+        socketId: socket.id,
+        userUpdated: userResult.modifiedCount,
+        captainUpdated: captainResult.modifiedCount,
+      });
     });
   });
-}
-
-const sendMessageToSocketId = (socketId, messageObject) => {
-  if (!io || !socketId) return;
-  io.to(socketId).emit(messageObject.event, messageObject.data);
 };
 
-export { initializeSocket, sendMessageToSocketId };
+export const sendMessageToSocketId = (socketId, message) => {
+  if (!io) {
+    console.log("❌ EMIT FAILED: IO NOT INITIALIZED");
+    return;
+  }
+
+  if (!socketId) {
+    console.log("❌ EMIT FAILED: socketId missing", message.event);
+    return;
+  }
+
+  console.log("📤 EMITTING EVENT:", {
+    socketId,
+    event: message.event,
+  });
+
+  io.to(socketId).emit(message.event, message.data);
+};

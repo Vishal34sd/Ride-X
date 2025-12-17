@@ -1,6 +1,7 @@
 import userModel from "../models/userModel.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
+import captainModel from "../models/captainModel.js"
 
 export const authUser = async(req , res , next)=>{
         const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
