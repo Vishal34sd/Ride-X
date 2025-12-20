@@ -3,6 +3,8 @@ import Navbar from "../components/Navbar";
 import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { io } from "socket.io-client";
+import { decodeAccessToken } from "../helper/Token";
 import useBookRide from "../hooks/useBookRide";
 
 export default function UserHomePage() {
@@ -21,12 +23,19 @@ export default function UserHomePage() {
   const [pickupCoords, setPickupCoords] = useState(null);
   const [destinationCoords, setDestinationCoords] = useState(null);
 
+  const [rideNotification, setRideNotification] = useState(null);
+
   const mapRef = useRef(null);
   const pickupMarkerRef = useRef(null);
   const destinationMarkerRef = useRef(null);
   const routeRef = useRef(null);
 
+  const socketRef = useRef(null);
+
   const { bookRide } = useBookRide();
+
+  const user = decodeAccessToken();
+  const userId = user?._id;
 
   const fetchSuggestions = async (query) => {
     try {
@@ -66,6 +75,56 @@ export default function UserHomePage() {
       } else setDestinationSuggestions([]);
     }, 400);
   };
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const socketUrl =
+      import.meta.env.VITE_SOCKET_URL || "http://localhost:8080";
+
+    socketRef.current = io(socketUrl, {
+      withCredentials: false,
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("✅ User socket connected:", socketRef.current.id);
+
+      socketRef.current.emit("join", {
+        userId,
+        userType: "user",
+      });
+    });
+
+    socketRef.current.on("ride-confirmed", (rideData) => {
+      console.log("✅ Ride confirmed for user:", rideData);
+      setRideNotification({ type: "confirmed", ride: rideData });
+    });
+
+    socketRef.current.on("ride-declined", (rideData) => {
+      console.log("⚠️ Ride declined for user:", rideData);
+      setRideNotification({ type: "declined", ride: rideData });
+    });
+
+    socketRef.current.on("disconnect", () => {
+      console.log("🔌 User socket disconnected");
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    if (!rideNotification) return;
+
+    const timer = setTimeout(() => {
+      setRideNotification(null);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [rideNotification]);
 
   useEffect(() => {
     const map = L.map("map").setView([28.6139, 77.209], 12);
@@ -267,6 +326,26 @@ Time: ${hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`}`
               </div>
             )}
           </div>
+
+          {rideNotification && (
+            <div
+              className={`mt-4 p-4 rounded-xl shadow-sm text-sm font-medium ${
+                rideNotification.type === "confirmed"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : "bg-red-50 text-red-800 border border-red-200"
+              }`}
+            >
+              {rideNotification.type === "confirmed" ? (
+                <p>
+                  ✅ Your ride has been <b>confirmed</b> by a captain.
+                </p>
+              ) : (
+                <p>
+                  ⚠️ Your ride was <b>declined</b>. Please try booking again.
+                </p>
+              )}
+            </div>
+          )}
 
           {fareData && (
             <button

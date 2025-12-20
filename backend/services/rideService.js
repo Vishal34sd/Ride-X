@@ -84,7 +84,7 @@ export const confirmRideService = async({rideId , captain})=>{
     const ride = await rideModel.findOne({
         _id :rideId,
         captain : captain._id
-    }).populate("user").populate("captain".select("+otp"));
+    }).populate("user").populate("captain");
 
     return ride ;
 }
@@ -93,7 +93,7 @@ export const startRideService = async({rideId , otp , captain})=>{
     const ride = await rideModel.findOne({
         _id :rideId,
         captain : captain._id
-    }).populate("user").populate("captain".select("+otp"));
+    }).populate("user").populate("captain");
 
     await rideModel.findOneAndUpdate({
         _id :rideId
@@ -116,7 +116,7 @@ export const endRideService = async({rideId , captain})=>{
     const ride = await rideModel.findOne({
         _id : rideId,
         captain : captain._id
-    }).populate("user").populate("captain".select("+otp"));
+    }).populate("user").populate("captain");
 
     if(!ride){
         throw new Error("Ride not found for this captain");

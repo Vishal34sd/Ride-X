@@ -152,6 +152,41 @@ export const confirmRide = async (req, res) => {
   }
 };
 
+export const declineRide = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { rideId } = req.body;
+
+  try {
+    const ride = await rideModel
+      .findByIdAndUpdate(
+        rideId,
+        { status: "cancelled" },
+        { new: true }
+      )
+      .populate("user");
+
+    if (!ride) {
+      return res.status(404).json({ message: "Ride not found" });
+    }
+
+    if (ride.user?.socketId) {
+      sendMessageToSocketId(ride.user.socketId, {
+        event: "ride-declined",
+        data: ride,
+      });
+    }
+
+    return res.status(200).json({ rideData: ride });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Ride decline failed" });
+  }
+};
+
 export const startRide = async(req , res)=>{
     const errors = validationResult(req);
     if(!errors.isEmpty()){

@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import { io } from "socket.io-client";
-import { decodeAccessToken } from "../helper/Token";
+import axios from "axios";
+import { decodeAccessToken, getAccessToken } from "../helper/Token";
 
 export default function CaptainDashboard() {
   const [ride, setRide] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const socketRef = useRef(null);
 
   const captain = decodeAccessToken();
@@ -44,6 +46,54 @@ export default function CaptainDashboard() {
       }
     };
   }, [captainId]);
+
+  const handleAcceptRide = async () => {
+    if (!ride?._id) return;
+    setActionLoading(true);
+    try {
+      const token = getAccessToken();
+      await axios.post(
+        "http://localhost:8080/api/v1/rides/confirm",
+        { rideId: ride._id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setRide(null);
+    } catch (error) {
+      console.error("Accept ride failed", error);
+      alert("Failed to accept ride. Please try again.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeclineRide = async () => {
+    if (!ride?._id) return;
+    setActionLoading(true);
+    try {
+      const token = getAccessToken();
+      await axios.post(
+        "http://localhost:8080/api/v1/rides/decline",
+        { rideId: ride._id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setRide(null);
+    } catch (error) {
+      console.error("Decline ride failed", error);
+      alert("Failed to decline ride. Please try again.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <>
@@ -104,16 +154,20 @@ export default function CaptainDashboard() {
             <div className="flex gap-3 p-4 border-t">
               <button
                 type="button"
-                className="flex-1 py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition"
+                onClick={handleAcceptRide}
+                disabled={actionLoading}
+                className="flex-1 py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Accept
+                {actionLoading ? "Processing..." : "Accept"}
               </button>
 
               <button
                 type="button"
-                className="flex-1 py-3 rounded-xl bg-red-100 text-red-600 font-semibold hover:bg-red-200 transition"
+                onClick={handleDeclineRide}
+                disabled={actionLoading}
+                className="flex-1 py-3 rounded-xl bg-red-100 text-red-600 font-semibold hover:bg-red-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Decline
+                {actionLoading ? "Processing..." : "Decline"}
               </button>
             </div>
           </div>
