@@ -81,7 +81,7 @@ const LandingPage = () => {
 
       {/* NAVBAR */}
       <nav className="w-full flex justify-between items-center px-8 py-4 border-b bg-black">
-        <div className="text-3xl font-bold text-white">Uber</div>
+        <div className="text-3xl font-bold text-white">Ride-X</div>
 
         <div className="hidden md:flex space-x-5 text-white mr-96">
           <a href="#" className="hover:bg-gray-700 rounded-full px-5 py-2">Ride</a>

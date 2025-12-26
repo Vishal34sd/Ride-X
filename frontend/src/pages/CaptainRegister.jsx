@@ -50,6 +50,7 @@ export default function CaptainRegister() {
 
       console.log("Captain registered:", response.data);
       saveAccessToken(response.data.token);
+      localStorage.setItem("role", "captain");
       alert("Captain account created successfully!");
 
       // Optional: reset form

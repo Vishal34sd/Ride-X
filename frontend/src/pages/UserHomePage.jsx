@@ -19,11 +19,13 @@ export default function UserHomePage() {
 
   const [vehicleType, setVehicleType] = useState("");
   const [fareData, setFareData] = useState(null);
+  const [showFareDetails, setShowFareDetails] = useState(false);
 
   const [pickupCoords, setPickupCoords] = useState(null);
   const [destinationCoords, setDestinationCoords] = useState(null);
 
   const [rideNotification, setRideNotification] = useState(null);
+  const [currentRide, setCurrentRide] = useState(null);
 
   const mapRef = useRef(null);
   const pickupMarkerRef = useRef(null);
@@ -36,6 +38,9 @@ export default function UserHomePage() {
 
   const user = decodeAccessToken();
   const userId = user?._id;
+
+  const getFormStorageKey = () =>
+    userId ? `ride_form_${userId}` : "ride_form_guest";
 
   const fetchSuggestions = async (query) => {
     try {
@@ -54,6 +59,7 @@ export default function UserHomePage() {
     const value = e.target.value;
     setPickup(value);
     setFareData(null);
+    setShowFareDetails(false);
 
     clearTimeout(pickupTimer.current);
     pickupTimer.current = setTimeout(async () => {
@@ -67,6 +73,7 @@ export default function UserHomePage() {
     const value = e.target.value;
     setDestination(value);
     setFareData(null);
+    setShowFareDetails(false);
 
     clearTimeout(destinationTimer.current);
     destinationTimer.current = setTimeout(async () => {
@@ -75,6 +82,40 @@ export default function UserHomePage() {
       } else setDestinationSuggestions([]);
     }, 400);
   };
+
+  // Load saved form values when user opens the page
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const key = getFormStorageKey();
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return;
+
+    try {
+      const saved = JSON.parse(raw);
+      if (saved.pickup) setPickup(saved.pickup);
+      if (saved.destination) setDestination(saved.destination);
+      if (saved.vehicleType) setVehicleType(saved.vehicleType);
+    } catch (e) {
+      console.error("Failed to parse saved ride form", e);
+    }
+  }, [userId]);
+
+  // Persist form values whenever they change
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = getFormStorageKey();
+    const data = {
+      pickup,
+      destination,
+      vehicleType,
+    };
+    try {
+      window.localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.error("Failed to save ride form", e);
+    }
+  }, [pickup, destination, vehicleType, userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -98,6 +139,7 @@ export default function UserHomePage() {
     socketRef.current.on("ride-confirmed", (rideData) => {
       console.log("✅ Ride confirmed for user:", rideData);
       setRideNotification({ type: "confirmed", ride: rideData });
+      setCurrentRide(rideData);
     });
 
     socketRef.current.on("ride-declined", (rideData) => {
@@ -182,9 +224,70 @@ export default function UserHomePage() {
         }
       );
       setFareData(res.data.fareData);
+      setShowFareDetails(false);
     } catch {
       alert("Could not fetch fare!");
     }
+  };
+
+  const roundMoney = (value) => Math.round((Number(value) || 0) * 100) / 100;
+
+  const getFareBreakdown = () => {
+    if (!fareData || !vehicleType) return null;
+
+    const fallbackBaseFareMap = {
+      auto: 30,
+      car: 50,
+      motorcycle: 20,
+    };
+
+    const fallbackPerKmRateMap = {
+      auto: 10,
+      car: 15,
+      motorcycle: 8,
+    };
+
+    const backendBaseFare = Number(fareData.baseFare);
+    const backendPerKmRate = Number(fareData.perKmRate);
+
+    const baseFare = Number.isFinite(backendBaseFare)
+      ? backendBaseFare
+      : (fallbackBaseFareMap[vehicleType] ?? 0);
+
+    const perKmRate = Number.isFinite(backendPerKmRate)
+      ? backendPerKmRate
+      : (fallbackPerKmRateMap[vehicleType] ?? 0);
+
+    const distanceKm = Number(fareData.distanceKm) || 0;
+
+    // Prefer backend-provided numbers (exact), fallback to client calculation
+    const backendDistanceCharge = Number(fareData.distanceCharge);
+    const distanceCharge = Number.isFinite(backendDistanceCharge)
+      ? backendDistanceCharge
+      : perKmRate * distanceKm;
+
+    const computedSubtotal = roundMoney(
+      (Number.isFinite(baseFare) ? baseFare : 0) + distanceCharge
+    );
+
+    const backendSubtotal = Number(fareData.subtotal);
+    const subtotal = Number.isFinite(backendSubtotal)
+      ? roundMoney(backendSubtotal)
+      : computedSubtotal;
+
+    const total = roundMoney(fareData.fare);
+    let taxesAndFees = roundMoney(total - subtotal);
+    if (Math.abs(taxesAndFees) < 0.01) taxesAndFees = 0;
+
+    return {
+      baseFare: roundMoney(baseFare),
+      perKmRate: roundMoney(perKmRate),
+      distanceKm: roundMoney(distanceKm),
+      distanceCharge: roundMoney(distanceCharge),
+      subtotal,
+      taxesAndFees,
+      total,
+    };
   };
 
    const handleBookRide = async () => {
@@ -196,6 +299,9 @@ export default function UserHomePage() {
         destination,
         vehicleType,
       });
+
+      setCurrentRide(ride);
+      setRideNotification({ type: "pending", ride });
 
       const totalMinutes = Math.floor(fareData.durationSeconds / 60);
       const hours = Math.floor(totalMinutes / 60);
@@ -283,6 +389,7 @@ Time: ${hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`}`
               onChange={(e) => {
                 setVehicleType(e.target.value);
                 setFareData(null);
+                setShowFareDetails(false);
               }}
               className="w-full border px-4 py-3 rounded-lg mb-4"
             >
@@ -323,6 +430,57 @@ Time: ${hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`}`
                       : `${minutes} min`;
                   })()}
                 </p>
+
+                <button
+                  type="button"
+                  onClick={() => setShowFareDetails((v) => !v)}
+                  className="text-sm underline text-gray-700"
+                >
+                  {showFareDetails ? "Hide fare details" : "View fare details"}
+                </button>
+
+                {showFareDetails && (() => {
+                  const breakdown = getFareBreakdown();
+                  if (!breakdown) return null;
+
+                  return (
+                    <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">Fare calculation</span>
+                        <span className="font-semibold">₹{breakdown.total}</span>
+                      </div>
+
+                      <div className="mt-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span>Base fare</span>
+                          <span>₹{breakdown.baseFare}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span>
+                            Distance charge (₹{breakdown.perKmRate}/km × {breakdown.distanceKm} km)
+                          </span>
+                          <span>₹{breakdown.distanceCharge}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-gray-200 pt-2">
+                          <span>Subtotal</span>
+                          <span>₹{breakdown.subtotal}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span>Taxes & fees</span>
+                          <span>₹{breakdown.taxesAndFees}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-gray-200 pt-2 font-semibold">
+                          <span>Total</span>
+                          <span>₹{breakdown.total}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>
@@ -332,14 +490,23 @@ Time: ${hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`}`
               className={`mt-4 p-4 rounded-xl shadow-sm text-sm font-medium ${
                 rideNotification.type === "confirmed"
                   ? "bg-green-50 text-green-800 border border-green-200"
+                  : rideNotification.type === "pending"
+                  ? "bg-yellow-50 text-yellow-800 border border-yellow-200"
                   : "bg-red-50 text-red-800 border border-red-200"
               }`}
             >
-              {rideNotification.type === "confirmed" ? (
+              {rideNotification.type === "confirmed" && (
                 <p>
                   ✅ Your ride has been <b>confirmed</b> by a captain.
                 </p>
-              ) : (
+              )}
+              {rideNotification.type === "pending" && (
+                <p>
+                  ⏳ Your ride is <b>pending</b>. Waiting for a captain to
+                  accept.
+                </p>
+              )}
+              {rideNotification.type === "declined" && (
                 <p>
                   ⚠️ Your ride was <b>declined</b>. Please try booking again.
                 </p>

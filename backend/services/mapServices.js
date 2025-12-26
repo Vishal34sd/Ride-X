@@ -96,7 +96,7 @@ export const getAutoCompleteResults = async (input) => {
     }
 };
 
-export const getCaptainInTheRadius = async (lat, lng, radiusKm) => {
+export const getCaptainInTheRadius = async (lat, lng, radiusKm, filters = {}) => {
     // NOTE: the current `location` field is not stored as a GeoJSON
     // point with a 2dsphere index, so the $geoWithin query will
     // never match. For now, return all connected captains so that
@@ -104,9 +104,15 @@ export const getCaptainInTheRadius = async (lat, lng, radiusKm) => {
     //
     // Later, you can change `location` to a [lng, lat] array with
     // a 2dsphere index and implement true radius filtering.
-    const captains = await captainModel.find({
+    const query = {
         // only captains that currently have an active socket
         socketId: { $exists: true, $ne: null },
-    });
+    };
+
+    if (filters?.vehicleType) {
+        query["vehicles.vehicleType"] = filters.vehicleType;
+    }
+
+    const captains = await captainModel.find(query);
     return captains;
 };

@@ -7,10 +7,12 @@ export const getFareService = async ({ pickup, destination, vehicleType }) => {
         throw new Error("Pickup and destination are required");
     }
 
+    const normalizedVehicleType = String(vehicleType || "").toLowerCase().trim();
+
     // Keep allowed vehicle types consistent with rideValidation
     // and captainModel (car, motorcycle, auto)
     const allowedVehicles = ["auto", "car", "motorcycle"];
-    if (!vehicleType || !allowedVehicles.includes(vehicleType)) {
+    if (!normalizedVehicleType || !allowedVehicles.includes(normalizedVehicleType)) {
         throw new Error("Invalid or missing vehicle type");
     }
 
@@ -31,12 +33,32 @@ export const getFareService = async ({ pickup, destination, vehicleType }) => {
     const { distanceMeters , durationSeconds } = await getDistanceAndTime(pickup, destination);
     const distanceKm = distanceMeters / 1000;
 
-    const rawFare = baseFare[vehicleType] + perKmRate[vehicleType] * distanceKm;
+    const selectedBaseFare = baseFare[normalizedVehicleType];
+    const selectedPerKmRate = perKmRate[normalizedVehicleType];
 
-    
-    const fare = Math.round(rawFare * 100) / 100;
+    const distanceCharge = selectedPerKmRate * distanceKm;
+    const rawFare = selectedBaseFare + distanceCharge;
 
-    return {distanceKm , durationSeconds , fare};
+    const roundMoney = (value) => {
+        const n = Number(value);
+        if (!Number.isFinite(n)) {
+            throw new Error("Fare calculation failed: invalid numeric value");
+        }
+        return Math.round(n * 100) / 100;
+    };
+    const fare = roundMoney(rawFare);
+    const subtotal = roundMoney(selectedBaseFare + distanceCharge);
+
+    return {
+        distanceKm,
+        durationSeconds,
+        fare,
+        // breakdown values for UI (kept consistent with backend)
+        baseFare: roundMoney(selectedBaseFare),
+        perKmRate: roundMoney(selectedPerKmRate),
+        distanceCharge: roundMoney(distanceCharge),
+        subtotal,
+    };
 };
 
 export const generateOtp = () => {
@@ -74,19 +96,34 @@ export const createRideService = async ({
 };
 
 export const confirmRideService = async({rideId , captain})=>{
-    await rideModel.findOneAndUpdate({
-        _id: rideId
-    } , {
-        status : "accepted",
-        captain : captain._id
-    })
+    const ride = await rideModel.findById(rideId);
+    if (!ride) {
+        throw new Error("Ride not found");
+    }
 
-    const ride = await rideModel.findOne({
+    const captainVehicleType = captain?.vehicles?.vehicleType;
+    if (!captainVehicleType) {
+        throw new Error("Captain vehicle type is missing");
+    }
+
+    if (ride.vehicleType !== captainVehicleType) {
+        throw new Error("Captain vehicle type does not match ride type");
+    }
+
+    await rideModel.findOneAndUpdate(
+        { _id: rideId },
+        {
+			status : "confirmed",
+            captain : captain._id
+        }
+    );
+
+    const populatedRide = await rideModel.findOne({
         _id :rideId,
         captain : captain._id
     }).populate("user").populate("captain");
 
-    return ride ;
+    return populatedRide ;
 }
 
 export const startRideService = async({rideId , otp , captain})=>{

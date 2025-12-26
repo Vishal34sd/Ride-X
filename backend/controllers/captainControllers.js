@@ -77,7 +77,20 @@ const loginCaptain = async (req, res) => {
 
 // PROFILE
 const getCaptainProfile = async (req, res) => {
-  return res.status(200).json({ captain: req.captain });
+  try {
+    const captain = await captainModel
+      .findById(req.captain?._id)
+      .select("-password");
+
+    if (!captain) {
+      return res.status(404).json({ message: "Captain not found" });
+    }
+
+    return res.status(200).json({ captain });
+  } catch (e) {
+    console.error("Failed to fetch captain profile", e);
+    return res.status(500).json({ message: "Failed to fetch captain profile" });
+  }
 };
 
 // LOGOUT

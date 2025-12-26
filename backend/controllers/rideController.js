@@ -55,7 +55,8 @@ export const createRide = async (req, res) => {
     const captains = await getCaptainInTheRadius(
       pickupCoordinates.lat,
       pickupCoordinates.lng,
-      2
+      2,
+      { vehicleType }
     );
 
     console.log("Nearby captains found:", captains.length);
@@ -111,12 +112,16 @@ export const getFare = async(req, res)=>{
     const { pickup , destination, vehicleType } = req.query ;
     try{
     console.log("GET FARE QUERY:", { pickup, destination, vehicleType });
-        const {distanceKm , durationSeconds , fare} = await getFareService({ pickup , destination, vehicleType });
+      const {distanceKm , durationSeconds , fare, baseFare, perKmRate, distanceCharge, subtotal} = await getFareService({ pickup , destination, vehicleType });
         res.status(200).json({
             fareData: {
                 distanceKm,
                 durationSeconds,
-                fare
+          fare,
+          baseFare,
+          perKmRate,
+          distanceCharge,
+          subtotal
             }
         });
     }
@@ -148,7 +153,9 @@ export const confirmRide = async (req, res) => {
     res.status(200).json({ rideData: ride });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Ride confirmation failed" });
+    const message = error?.message || "Ride confirmation failed";
+    const status = message.includes("does not match") ? 400 : 500;
+    res.status(status).json({ message });
   }
 };
 
@@ -164,7 +171,7 @@ export const declineRide = async (req, res) => {
     const ride = await rideModel
       .findByIdAndUpdate(
         rideId,
-        { status: "cancelled" },
+        { status: "cancelled", captain: req.captain?._id },
         { new: true }
       )
       .populate("user");
@@ -228,3 +235,77 @@ export const endRide = async(req , res)=>{
         console.log(e);
     }
 }
+
+export const getLatestRide = async (req, res) => {
+  try {
+    const ride = await rideModel
+      .findOne({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .select("pickup destination vehicleType status createdAt");
+
+    if (!ride) {
+      return res.status(404).json({ message: "No rides found" });
+    }
+
+    return res.status(200).json({ ride });
+  } catch (error) {
+    console.error("Failed to fetch latest ride", error);
+    return res.status(500).json({ message: "Failed to fetch latest ride" });
+  }
+};
+
+export const getUserRides = async (req, res) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const rides = await rideModel
+      .find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .select("pickup destination vehicleType status fare createdAt");
+
+    return res.status(200).json({ rides });
+  } catch (error) {
+    console.error("Failed to fetch user rides", error);
+    return res.status(500).json({ message: "Failed to fetch user rides" });
+  }
+};
+
+export const getCaptainRideStats = async (req, res) => {
+  try {
+    if (!req.captain || !req.captain._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const totalRides = await rideModel.countDocuments({
+      captain: req.captain._id,
+    });
+
+    return res.status(200).json({ totalRides });
+  } catch (error) {
+    console.error("Failed to fetch captain ride stats", error);
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch captain ride stats" });
+  }
+};
+
+export const getCaptainRides = async (req, res) => {
+  try {
+    if (!req.captain || !req.captain._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const rides = await rideModel
+      .find({ captain: req.captain._id })
+      .sort({ createdAt: -1 })
+      .select("pickup destination vehicleType status fare createdAt updatedAt")
+      .populate("user", "fullname firstname lastname email");
+
+    return res.status(200).json({ rides });
+  } catch (error) {
+    console.error("Failed to fetch captain rides", error);
+    return res.status(500).json({ message: "Failed to fetch captain rides" });
+  }
+};

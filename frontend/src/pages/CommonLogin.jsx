@@ -74,8 +74,8 @@ export default function CommonLogin() {
     <div className="min-h-screen bg-white font-sans">
 
       {/* NAVBAR */}
-      <nav className="w-full bg-black text-white px-6 py-4 flex items-center">
-        <div className="text-2xl font-bold tracking-tight">Uber</div>
+      <nav className="w-full bg-black text-white px-10 py-4 flex items-center h-20">
+        <div className="text-2xl font-bold tracking-tight">Ride-X</div>
       </nav>
 
       {/* LOGIN FORM */}

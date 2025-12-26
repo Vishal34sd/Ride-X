@@ -6,10 +6,13 @@ import Register from "./pages/Register"
 import UserRegister from "./pages/UserRegister.jsx"
 import CaptainRegister from "./pages/CaptainRegister.jsx"
 import LandingPage from "./pages/LandingPage";
-import UserHomePage from "./pages/UserHomePage.jsx"
-import CaptainDashbaord from "./pages/CaptainDashboard.jsx"
-import CommonLogin from "./pages/CommonLogin.jsx"
-import UserProfile from "./pages/UserProfile.jsx"
+import UserHomePage from "./pages/UserHomePage.jsx";
+import CaptainDashbaord from "./pages/CaptainDashboard.jsx";
+import CommonLogin from "./pages/CommonLogin.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
+import StatusPage from "./pages/StatusPage.jsx";
+import CaptainProfile from "./pages/CaptainProfile.jsx";
+import CaptainRides from "./pages/CaptainRides.jsx";
 
 
 const router = createBrowserRouter([
@@ -42,10 +45,24 @@ const router = createBrowserRouter([
           path: "/profile",
           element: <UserProfile />
      },
+     {
+          path: "/status",
+          element: <StatusPage />
+     },
       {
           path : "/homepage-captain",
           element : <CaptainDashbaord/>
      }
+	 ,
+	 {
+		  path: "/captain/profile",
+		  element: <CaptainProfile />
+	 }
+      ,
+      {
+            path: "/captain/rides",
+            element: <CaptainRides />
+      }
 ])
 createRoot(document.getElementById('root')).render(
   

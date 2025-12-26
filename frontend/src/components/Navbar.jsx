@@ -91,12 +91,12 @@ const Navbar = () => {
           Ride
         </Link>
         <Link
-          to="/homepage-captain"
+          to="/status"
           className={`${isActive(
-            "/homepage-captain"
+            "/status"
           )} rounded-full px-5 py-2 transition`}
         >
-          Drive
+          Status
         </Link>
         <button className="rounded-full px-5 py-2 hover:bg-gray-700 transition">
           Business

@@ -72,7 +72,7 @@ export default function UserProfile() {
                   <h1 className="text-2xl font-bold text-gray-900">
                     {user.fullname?.firstname} {user.fullname?.lastname}
                   </h1>
-                  <p className="text-gray-500 text-sm">Uber rider account</p>
+                  <p className="text-gray-500 text-sm">Ride-X rider account</p>
                 </div>
               </div>
 
