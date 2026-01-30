@@ -126,8 +126,9 @@ export const getFare = async(req, res)=>{
         });
     }
     catch(e){
-        console.log(e);
-        res.status(404).json({error : "fare not found "});
+      console.log("GET FARE ERROR:", e);
+      const message = e?.message || "Fare calculation failed";
+      res.status(500).json({ message });
     }
 }
 

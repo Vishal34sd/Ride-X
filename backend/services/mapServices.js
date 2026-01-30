@@ -38,6 +38,10 @@ export const getAddressCoordinates = async (address) => {
 
 export const getDistanceAndTime = async (origin, destination) => {
     try {
+        if (!ORS_KEY) {
+            throw new Error("ORS_API_KEY is missing. Check backend/.env loading and server start directory.");
+        }
+
         const originCoords = await getAddressCoordinates(origin);
         const destinationCoords = await getAddressCoordinates(destination);
 

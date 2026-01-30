@@ -20,6 +20,7 @@ export default function UserHomePage() {
   const [vehicleType, setVehicleType] = useState("");
   const [fareData, setFareData] = useState(null);
   const [showFareDetails, setShowFareDetails] = useState(false);
+  const [fareLoading, setFareLoading] = useState(false);
 
   const [pickupCoords, setPickupCoords] = useState(null);
   const [destinationCoords, setDestinationCoords] = useState(null);
@@ -211,12 +212,14 @@ export default function UserHomePage() {
   }, [pickupCoords, destinationCoords]);
 
   const handleGetFare = async () => {
+    if (fareLoading) return;
     if (!pickup || !destination || !vehicleType) {
       alert("Please fill pickup, destination & vehicle");
       return;
     }
 
     try {
+      setFareLoading(true);
       const res = await axios.get(
         "http://localhost:8080/api/v1/rides/get-fare",
         {
@@ -225,8 +228,26 @@ export default function UserHomePage() {
       );
       setFareData(res.data.fareData);
       setShowFareDetails(false);
-    } catch {
-      alert("Could not fetch fare!");
+    } catch (err) {
+      const status = err?.response?.status;
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        (Array.isArray(err?.response?.data?.errors)
+          ? err.response.data.errors.map((e) => e.msg).join(", ")
+          : null) ||
+        err?.message ||
+        "Unknown error";
+
+      console.error("Get fare failed:", {
+        status,
+        message,
+        data: err?.response?.data,
+      });
+
+      alert(`Could not fetch fare${status ? ` (HTTP ${status})` : ""}: ${message}`);
+    } finally {
+      setFareLoading(false);
     }
   };
 
@@ -401,9 +422,18 @@ Time: ${hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`}`
 
             <button
               onClick={handleGetFare}
-              className="w-full bg-black text-white py-3 rounded-lg mb-4"
+              disabled={fareLoading}
+              className={`w-full bg-black text-white py-3 rounded-lg mb-4 flex items-center justify-center gap-2 ${
+                fareLoading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              Get Fare
+              {fareLoading && (
+                <span
+                  className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+                  aria-hidden="true"
+                />
+              )}
+              {fareLoading ? "Fetching fare..." : "Get Fare"}
             </button>
 
             {fareData && (
