@@ -5,7 +5,7 @@ import { getAccessToken } from "../helper/Token";
 export default function ProtectedRoute({ children, requiredRole }) {
   const token = getAccessToken();
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (requiredRole) {
