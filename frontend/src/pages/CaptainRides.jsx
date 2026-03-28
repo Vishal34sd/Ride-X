@@ -88,20 +88,20 @@ export default function CaptainRides() {
 
   const tabClass = (tabKey) =>
     tabKey === activeTab
-      ? "bg-black text-white"
-      : "bg-white text-gray-800 hover:bg-gray-100";
+      ? "bg-foreground text-background"
+      : "bg-card/60 text-foreground hover:bg-muted";
 
   return (
     <>
       <CaptainNavbar />
 
-      <div className="min-h-screen bg-gray-100 px-4 py-10">
+      <div className="min-h-screen bg-background px-4 py-10">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="bg-black text-white p-6 flex items-center justify-between">
+          <div className="bg-card/70 rounded-[var(--radius)] border border-border/60 shadow-lg overflow-hidden backdrop-blur">
+            <div className="border-b border-border/60 p-6 flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-semibold">All Rides</h1>
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-muted-foreground">
                   View rides by status
                 </p>
               </div>
@@ -127,23 +127,23 @@ export default function CaptainRides() {
 
               <div className="mt-6">
                 {loading ? (
-                  <p className="text-gray-600">Loading rides...</p>
+                  <p className="text-muted-foreground">Loading rides...</p>
                 ) : errorMsg ? (
-                  <p className="text-gray-600">{errorMsg}</p>
+                  <p className="text-muted-foreground">{errorMsg}</p>
                 ) : filteredRides.length === 0 ? (
-                  <p className="text-gray-600">No rides found.</p>
+                  <p className="text-muted-foreground">No rides found.</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {filteredRides.map((ride) => (
                       <div
                         key={ride?._id}
-                        className="rounded-2xl border bg-white overflow-hidden"
+                        className="rounded-[var(--radius)] border border-border/60 bg-card/70 overflow-hidden"
                       >
-                        <div className="p-4 border-b flex items-center justify-between">
-                          <span className="text-sm font-semibold text-gray-900">
+                        <div className="p-4 border-b border-border/60 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-foreground">
                             {statusLabelForRide(ride)}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {ride?.createdAt
                               ? new Date(ride.createdAt).toLocaleString()
                               : "-"}
@@ -152,29 +152,29 @@ export default function CaptainRides() {
 
                         <div className="p-4 space-y-3">
                           <div>
-                            <p className="text-xs text-gray-500">Pickup</p>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-xs text-muted-foreground">Pickup</p>
+                            <p className="font-medium text-foreground">
                               {ride?.pickup || "-"}
                             </p>
                           </div>
 
                           <div>
-                            <p className="text-xs text-gray-500">Destination</p>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-xs text-muted-foreground">Destination</p>
+                            <p className="font-medium text-foreground">
                               {ride?.destination || "-"}
                             </p>
                           </div>
 
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">Vehicle</span>
-                            <span className="px-3 py-1 text-sm rounded-full bg-gray-200 text-gray-800">
+                            <span className="text-xs text-muted-foreground">Vehicle</span>
+                            <span className="px-3 py-1 text-sm rounded-full bg-muted text-foreground">
                               {ride?.vehicleType || "-"}
                             </span>
                           </div>
 
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">Fare</span>
-                            <span className="font-semibold text-gray-900">
+                            <span className="text-xs text-muted-foreground">Fare</span>
+                            <span className="font-semibold text-foreground">
                               {typeof ride?.fare === "number" ? `₹${ride.fare}` : "-"}
                             </span>
                           </div>

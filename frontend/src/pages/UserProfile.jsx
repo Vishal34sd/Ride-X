@@ -52,56 +52,56 @@ export default function UserProfile() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-100 flex justify-center px-4 py-10">
-        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-md p-8">
+      <div className="min-h-screen bg-background flex justify-center px-4 py-10">
+        <div className="w-full max-w-2xl rounded-[var(--radius)] border border-border/60 bg-card/70 p-8 shadow-lg backdrop-blur">
           {loading ? (
-            <p className="text-center text-gray-500">Loading profile...</p>
+            <p className="text-center text-muted-foreground">Loading profile...</p>
           ) : error ? (
-            <p className="text-center text-red-500">{error}</p>
+            <p className="text-center text-destructive">{error}</p>
           ) : !user ? (
-            <p className="text-center text-gray-500">No user data found.</p>
+            <p className="text-center text-muted-foreground">No user data found.</p>
           ) : (
             <>
               <div className="flex items-center gap-6 mb-8">
                 <img
                   src={getAvatarUrl()}
                   alt="User avatar"
-                  className="w-20 h-20 rounded-full border border-gray-300 bg-gray-100 object-cover"
+                  className="w-20 h-20 rounded-full border border-border/60 bg-muted object-cover"
                 />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-foreground">
                     {user.fullname?.firstname} {user.fullname?.lastname}
                   </h1>
-                  <p className="text-gray-500 text-sm">Ride-X rider account</p>
+                  <p className="text-muted-foreground text-sm">Ride-X rider account</p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <div className="border rounded-xl p-4 flex justify-between items-center">
+                <div className="border border-border/60 rounded-[var(--radius)] p-4 flex justify-between items-center">
                   <div>
-                    <p className="text-xs uppercase text-gray-400 tracking-wide">
+                    <p className="text-xs uppercase text-muted-foreground tracking-wide">
                       Email
                     </p>
-                    <p className="text-gray-800 font-medium">{user.email}</p>
+                    <p className="text-foreground font-medium">{user.email}</p>
                   </div>
                 </div>
 
-                <div className="border rounded-xl p-4 flex justify-between items-center">
+                <div className="border border-border/60 rounded-[var(--radius)] p-4 flex justify-between items-center">
                   <div>
-                    <p className="text-xs uppercase text-gray-400 tracking-wide">
+                    <p className="text-xs uppercase text-muted-foreground tracking-wide">
                       User ID
                     </p>
-                    <p className="text-gray-800 font-mono text-sm truncate max-w-xs">
+                    <p className="text-foreground font-mono text-sm truncate max-w-xs">
                       {user._id}
                     </p>
                   </div>
                 </div>
 
-                <div className="border rounded-xl p-4">
-                  <p className="text-xs uppercase text-gray-400 tracking-wide mb-1">
+                <div className="border border-border/60 rounded-[var(--radius)] p-4">
+                  <p className="text-xs uppercase text-muted-foreground tracking-wide mb-1">
                     Account created
                   </p>
-                  <p className="text-gray-800 text-sm">
+                  <p className="text-foreground text-sm">
                     {user.createdAt
                       ? new Date(user.createdAt).toLocaleString()
                       : "Not available"}

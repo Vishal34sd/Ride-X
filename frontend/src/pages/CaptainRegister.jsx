@@ -1,8 +1,14 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import {saveAccessToken} from "../helper/Token.js"
+import { motion } from "framer-motion";
+import { saveAccessToken } from "../helper/Token.js";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 
 export default function CaptainRegister() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -14,7 +20,6 @@ export default function CaptainRegister() {
     vehicleType: "",
   });
 
-  // Update form values
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -22,11 +27,9 @@ export default function CaptainRegister() {
     });
   };
 
-  // Submit Logic (FIXED PAYLOAD)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🔥 Payload as backend expects
     const payload = {
       fullname: {
         firstname: formData.firstname,
@@ -52,8 +55,8 @@ export default function CaptainRegister() {
       saveAccessToken(response.data.token);
       localStorage.setItem("role", "captain");
       alert("Captain account created successfully!");
+      navigate("/login");
 
-      // Optional: reset form
       setFormData({
         firstname: "",
         lastname: "",
@@ -64,7 +67,6 @@ export default function CaptainRegister() {
         capacity: "",
         vehicleType: "",
       });
-
     } catch (error) {
       console.error("Error registering captain:", error);
 
@@ -77,123 +79,127 @@ export default function CaptainRegister() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-
-      {/* NAVBAR */}
-      <nav className="w-full bg-black text-white px-6 py-4 flex items-center">
-        <div className="text-2xl font-bold tracking-tight">Uber</div>
-      </nav>
-
-      {/* FORM BOX */}
-      <div className="max-w-md mx-auto mt-14 px-6">
-        <form
-          onSubmit={handleSubmit}
-          className="border border-gray-300 rounded-xl p-6 shadow-sm"
-        >
-          <h2 className="text-3xl font-semibold mb-2">Captain Sign Up</h2>
-          <p className="text-gray-600 mb-8">Register to drive with Uber</p>
-
-          {/* FIRST NAME */}
-          <input
-            type="text"
-            name="firstname"
-            placeholder="First Name"
-            value={formData.firstname}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* LAST NAME */}
-          <input
-            type="text"
-            name="lastname"
-            placeholder="Last Name"
-            value={formData.lastname}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* EMAIL */}
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* PASSWORD */}
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-6 focus:ring-2 focus:ring-black"
-            required
-          />
-
-          <h3 className="text-lg font-semibold mb-3">Vehicle Details</h3>
-
-          {/* VEHICLE COLOR */}
-          <input
-            type="text"
-            name="color"
-            placeholder="Vehicle Color"
-            value={formData.color}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* PLATE NUMBER */}
-          <input
-            type="text"
-            name="plate"
-            placeholder="License Plate Number"
-            value={formData.plate}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* CAPACITY */}
-          <input
-            type="number"
-            name="capacity"
-            placeholder="Seating Capacity"
-            value={formData.capacity}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* VEHICLE TYPE */}
-          <select
-            name="vehicleType"
-            value={formData.vehicleType}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-6 focus:ring-2 focus:ring-black"
-            required
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+        <div className="relative hidden items-center justify-center overflow-hidden bg-secondary lg:flex">
+          <motion.div
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0"
           >
-            <option value="">Select Vehicle Type</option>
-            <option value="car">Car</option>
-            <option value="auto">Auto</option>
-            <option value="bike">Bike</option>
-          </select>
+            <div className="absolute -left-10 bottom-12 h-72 w-72 rounded-full bg-muted/70 blur-3xl" />
+            <div className="absolute right-6 top-12 h-64 w-64 rounded-full bg-accent/70 blur-3xl" />
+          </motion.div>
+          <div className="relative z-10 max-w-md space-y-4 p-10">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              Captain Onboarding
+            </p>
+            <h1 className="text-3xl font-semibold">
+              Deliver premium rides with Ride-X.
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Access real-time demand forecasts and priority ride matching.
+            </p>
+          </div>
+        </div>
 
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            className="w-full bg-black text-white py-3 rounded-lg text-lg font-medium hover:bg-gray-900 transition"
-          >
-            Sign Up
-          </button>
-        </form>
+        <div className="flex items-center justify-center px-6 py-12">
+          <Card className="w-full max-w-md bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Captain sign up</CardTitle>
+              <CardDescription>Register your profile and vehicle details.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  type="text"
+                  name="firstname"
+                  placeholder="First name"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  type="text"
+                  name="lastname"
+                  placeholder="Last name"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Email address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+
+                <div className="pt-2">
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    Vehicle details
+                  </p>
+                </div>
+
+                <Input
+                  type="text"
+                  name="color"
+                  placeholder="Vehicle color"
+                  value={formData.color}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  type="text"
+                  name="plate"
+                  placeholder="License plate"
+                  value={formData.plate}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  type="number"
+                  name="capacity"
+                  placeholder="Seating capacity"
+                  value={formData.capacity}
+                  onChange={handleChange}
+                  required
+                />
+                <select
+                  name="vehicleType"
+                  value={formData.vehicleType}
+                  onChange={handleChange}
+                  className="h-11 w-full rounded-[var(--radius)] border border-input bg-background px-3 text-sm text-foreground"
+                  required
+                >
+                  <option value="">Select vehicle type</option>
+                  <option value="car">Car</option>
+                  <option value="auto">Auto</option>
+                  <option value="bike">Bike</option>
+                </select>
+
+                <Button type="submit" className="w-full">
+                  Sign Up
+                </Button>
+                <p className="text-center text-xs text-muted-foreground">
+                  Already with Ride-X?{" "}
+                  <Link to="/login" className="text-foreground hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -1,18 +1,22 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
+import { createRoot } from "react-dom/client";
+import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Register from "./pages/Register"
-import UserRegister from "./pages/UserRegister.jsx"
-import CaptainRegister from "./pages/CaptainRegister.jsx"
+import Register from "./pages/Register";
+import UserRegister from "./pages/UserRegister.jsx";
+import CaptainRegister from "./pages/CaptainRegister.jsx";
 import LandingPage from "./pages/LandingPage";
-import UserHomePage from "./pages/UserHomePage.jsx";
+import DashboardPage from "./pages/DashboardPage.jsx";
+import RideBookingPage from "./pages/RideBookingPage.jsx";
+import RideHistoryPage from "./pages/RideHistoryPage.jsx";
 import CaptainDashbaord from "./pages/CaptainDashboard.jsx";
 import CommonLogin from "./pages/CommonLogin.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
-import StatusPage from "./pages/StatusPage.jsx";
 import CaptainProfile from "./pages/CaptainProfile.jsx";
 import CaptainRides from "./pages/CaptainRides.jsx";
+import UnauthorizedPage from "./pages/UnauthorizedPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import { ToastProvider } from "./components/ui/toast";
 
 
 const router = createBrowserRouter([
@@ -36,36 +40,75 @@ const router = createBrowserRouter([
           path : "/login",
           element : <CommonLogin/>
      },
-     
      {
-          path : "/homepage-user",
-          element : <UserHomePage/>
+          path : "/dashboard",
+          element : (
+               <ProtectedRoute requiredRole="user">
+                    <DashboardPage/>
+               </ProtectedRoute>
+          )
+     },
+     {
+          path : "/book-ride",
+          element : (
+               <ProtectedRoute requiredRole="user">
+                    <RideBookingPage/>
+               </ProtectedRoute>
+          )
+     },
+     {
+          path : "/ride-history",
+          element : (
+               <ProtectedRoute requiredRole="user">
+                    <RideHistoryPage/>
+               </ProtectedRoute>
+          )
      },
      {
           path: "/profile",
-          element: <UserProfile />
-     },
-     {
-          path: "/status",
-          element: <StatusPage />
+          element: (
+               <ProtectedRoute requiredRole="user">
+                    <UserProfile />
+               </ProtectedRoute>
+          )
      },
       {
           path : "/homepage-captain",
-          element : <CaptainDashbaord/>
+          element : (
+               <ProtectedRoute requiredRole="captain">
+                    <CaptainDashbaord/>
+               </ProtectedRoute>
+          )
      }
 	 ,
 	 {
 		  path: "/captain/profile",
-		  element: <CaptainProfile />
+		  element: (
+               <ProtectedRoute requiredRole="captain">
+                    <CaptainProfile />
+               </ProtectedRoute>
+          )
 	 }
       ,
       {
             path: "/captain/rides",
-            element: <CaptainRides />
+            element: (
+               <ProtectedRoute requiredRole="captain">
+                    <CaptainRides />
+               </ProtectedRoute>
+          )
+      },
+      {
+            path: "/unauthorized",
+            element: <UnauthorizedPage />
+      },
+      {
+            path: "*",
+            element: <NotFoundPage />
       }
 ])
 createRoot(document.getElementById('root')).render(
-  
-     <RouterProvider router={router} />
-  
+     <ToastProvider>
+          <RouterProvider router={router} />
+     </ToastProvider>
 )

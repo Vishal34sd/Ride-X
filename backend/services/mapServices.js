@@ -77,25 +77,34 @@ export const getDistanceAndTime = async (origin, destination) => {
 };
 
 
-// 3️⃣ Autocomplete Suggestions
+
 export const getAutoCompleteResults = async (input) => {
-    const url = `${NOMINATIM_BASE_URL}/search?format=json&q=${encodeURIComponent(input)}&limit=5&addressdetails=1`;
+    if (!ORS_KEY) {
+        throw new Error("ORS_API_KEY is missing. ");
+    }
+
+    const url = `https://api.openrouteservice.org/geocode/autocomplete`;
 
     try {
         const response = await axios.get(url, {
-            headers: {
-                "User-Agent": "YourAppName/1.0"
-            }
+            params: {
+                api_key: ORS_KEY,
+                text: input,
+                size: 5,
+            },
         });
 
-        return response.data.map((item) => ({
-            name: item.display_name,
-            lat: item.lat,
-            lng: item.lon
+        // ORS returns GeoJSON FeatureCollection
+        const features = response.data?.features || [];
+
+        return features.map((feature) => ({
+            name: feature.properties?.label || feature.properties?.name || "Unknown",
+            lat: feature.geometry?.coordinates?.[1],
+            lng: feature.geometry?.coordinates?.[0],
         }));
 
     } catch (error) {
-        console.log("Suggestion Error:", error.message);
+        console.log("Suggestion Error:", error?.response?.status, error?.response?.data || error.message);
         throw error;
     }
 };

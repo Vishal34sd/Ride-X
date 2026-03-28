@@ -22,8 +22,8 @@ const CaptainNavbar = () => {
 
   const isActive = (path) =>
     location.pathname === path
-      ? "bg-white text-black"
-      : "hover:bg-gray-700";
+      ? "bg-foreground text-background"
+      : "hover:bg-muted";
 
   const initials = () => {
     const name =
@@ -109,66 +109,66 @@ const CaptainNavbar = () => {
   };
 
   return (
-    <nav className="w-full flex items-center px-8 py-4 border-b bg-black">
-      <Link to="/" className="text-3xl font-bold tracking-tight text-white">
-        Ride-X
-      </Link>
-
-      <div className="flex items-center space-x-6 text-[15px] text-white ml-10">
-        <Link
-          to="/homepage-captain"
-          className={`${isActive(
-            "/homepage-captain"
-          )} rounded-full px-5 py-2 transition`}
-        >
-          Dashboard
+    <nav className="w-full border-b border-border/60 bg-background/80 px-8 py-4 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center">
+        <Link to="/" className="text-2xl font-semibold tracking-tight">
+          Ride-X
         </Link>
 
-        
-
-        <Link
-          to="/captain/rides"
-          className={`${isActive(
-            "/captain/rides"
-          )} rounded-full px-5 py-2 transition border border-gray-700`}
-        >
-          All rides{typeof totalRides === "number" ? ` (${totalRides})` : ""}
-        </Link>
-      </div>
-
-      <div className="flex items-center space-x-3 text-[15px] text-white ml-auto">
-        {isCaptain && (
+        <div className="ml-10 hidden items-center space-x-3 text-sm text-muted-foreground md:flex">
           <Link
-            to="/captain/profile"
-            className="flex items-center gap-2 rounded-full px-3 py-1 hover:bg-gray-700 transition"
+            to="/homepage-captain"
+            className={`${isActive(
+              "/homepage-captain"
+            )} rounded-full px-4 py-2 transition`}
           >
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-black text-sm font-bold">
-              <img
-                src={avatarUrl}
-                alt="Captain avatar"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
-              />
-              <span className="absolute text-xs">{initials()}</span>
-            </div>
-            <span className="text-sm font-medium">
-              {captainProfile?.fullname?.firstname || "Captain"}
-            </span>
+            Dashboard
           </Link>
-        )}
 
-        {isCaptain && (
-          <button
-            type="button"
-            onClick={handleCaptainLogout}
-            disabled={loggingOut}
-            className="text-sm rounded-full px-4 py-2 border border-gray-600 hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          <Link
+            to="/captain/rides"
+            className={`${isActive(
+              "/captain/rides"
+            )} rounded-full border border-border/60 px-4 py-2 transition`}
           >
-            {loggingOut ? "Logging out..." : "Logout"}
-          </button>
-        )}
+            All rides{typeof totalRides === "number" ? ` (${totalRides})` : ""}
+          </Link>
+        </div>
+
+        <div className="ml-auto flex items-center space-x-3 text-sm">
+          {isCaptain && (
+            <Link
+              to="/captain/profile"
+              className="flex items-center gap-2 rounded-full px-3 py-1 hover:bg-muted transition"
+            >
+              <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-bold">
+                <img
+                  src={avatarUrl}
+                  alt="Captain avatar"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+                <span className="absolute text-xs">{initials()}</span>
+              </div>
+              <span className="text-sm font-medium">
+                {captainProfile?.fullname?.firstname || "Captain"}
+              </span>
+            </Link>
+          )}
+
+          {isCaptain && (
+            <button
+              type="button"
+              onClick={handleCaptainLogout}
+              disabled={loggingOut}
+              className="rounded-full border border-border/60 px-4 py-2 text-xs font-medium hover:bg-muted transition disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loggingOut ? "Logging out..." : "Logout"}
+            </button>
+          )}
+        </div>
       </div>
     </nav>
   );

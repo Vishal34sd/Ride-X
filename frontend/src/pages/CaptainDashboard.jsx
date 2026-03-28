@@ -99,29 +99,29 @@ export default function CaptainDashboard() {
     <>
       <CaptainNavbar />
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
         {!ride ? (
           /* Waiting State */
-          <div className="bg-white p-8 rounded-xl shadow-md text-center w-full max-w-sm">
+          <div className="bg-card/70 p-8 rounded-[var(--radius)] border border-border/60 shadow-lg backdrop-blur text-center w-full max-w-sm">
             <div className="flex justify-center mb-3">
-              <span className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="h-3 w-3 bg-foreground rounded-full animate-pulse"></span>
             </div>
 
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-foreground">
               You’re Online
             </h2>
 
-            <p className="text-gray-500 mt-2">
+            <p className="text-muted-foreground mt-2">
               Waiting for ride requests...
             </p>
           </div>
         ) : (
           /* Ride Request Card */
-          <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm overflow-hidden">
+          <div className="bg-card/70 rounded-[var(--radius)] border border-border/60 shadow-lg w-full max-w-sm overflow-hidden backdrop-blur">
             {/* Header */}
-            <div className="bg-black text-white p-4">
+            <div className="border-b border-border/60 p-4">
               <h2 className="text-lg font-semibold">New Ride Request</h2>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-muted-foreground">
                 Respond quickly to earn more 🚗
               </p>
             </div>
@@ -129,34 +129,34 @@ export default function CaptainDashboard() {
             {/* Ride Details */}
             <div className="p-5 space-y-4">
               <div>
-                <p className="text-xs text-gray-500">Pickup</p>
-                <p className="font-medium text-gray-800">
+                <p className="text-xs text-muted-foreground">Pickup</p>
+                <p className="font-medium text-foreground">
                   {ride.pickup}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs text-gray-500">Destination</p>
-                <p className="font-medium text-gray-800">
+                <p className="text-xs text-muted-foreground">Destination</p>
+                <p className="font-medium text-foreground">
                   {ride.destination}
                 </p>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Vehicle</span>
-                <span className="px-3 py-1 text-sm rounded-full bg-gray-200 text-gray-800">
+                <span className="text-xs text-muted-foreground">Vehicle</span>
+                <span className="px-3 py-1 text-sm rounded-full bg-muted text-foreground">
                   {ride.vehicleType}
                 </span>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 p-4 border-t">
+            <div className="flex gap-3 p-4 border-t border-border/60">
               <button
                 type="button"
                 onClick={handleAcceptRide}
                 disabled={actionLoading}
-                className="flex-1 py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex-1 py-3 rounded-[var(--radius)] bg-foreground text-background font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {actionLoading ? "Processing..." : "Accept"}
               </button>
@@ -165,7 +165,7 @@ export default function CaptainDashboard() {
                 type="button"
                 onClick={handleDeclineRide}
                 disabled={actionLoading}
-                className="flex-1 py-3 rounded-xl bg-red-100 text-red-600 font-semibold hover:bg-red-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex-1 py-3 rounded-[var(--radius)] bg-destructive/20 text-destructive font-semibold hover:bg-destructive/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {actionLoading ? "Processing..." : "Decline"}
               </button>

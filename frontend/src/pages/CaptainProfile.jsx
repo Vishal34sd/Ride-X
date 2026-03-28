@@ -90,69 +90,69 @@ export default function CaptainProfile() {
     <>
       <CaptainNavbar />
 
-      <div className="min-h-screen bg-gray-100 px-4 py-10">
+      <div className="min-h-screen bg-background px-4 py-10">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="bg-black text-white p-6">
+          <div className="rounded-[var(--radius)] border border-border/60 bg-card/70 shadow-lg backdrop-blur overflow-hidden">
+            <div className="border-b border-border/60 p-6">
               <h1 className="text-2xl font-semibold">Captain Profile</h1>
-              <p className="text-sm text-gray-300">Manage your details</p>
+              <p className="text-sm text-muted-foreground">Manage your details</p>
             </div>
 
             <div className="p-6">
               {loading ? (
-                <p className="text-gray-600">Loading...</p>
+                <p className="text-muted-foreground">Loading...</p>
               ) : !captain ? (
                 <div className="space-y-3">
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     {errorMsg || "Profile not available."}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl border">
-                      <p className="text-xs text-gray-500">Name</p>
-                      <p className="font-semibold text-gray-900">
+                    <div className="p-4 rounded-[var(--radius)] border border-border/60">
+                      <p className="text-xs text-muted-foreground">Name</p>
+                      <p className="font-semibold text-foreground">
                         {captain?.fullname?.firstname} {captain?.fullname?.lastname}
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border">
-                      <p className="text-xs text-gray-500">Email</p>
-                      <p className="font-semibold text-gray-900">{captain?.email}</p>
+                    <div className="p-4 rounded-[var(--radius)] border border-border/60">
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="font-semibold text-foreground">{captain?.email}</p>
                     </div>
 
-                    <div className="p-4 rounded-xl border">
-                      <p className="text-xs text-gray-500">Vehicle Type</p>
-                      <p className="font-semibold text-gray-900">
+                    <div className="p-4 rounded-[var(--radius)] border border-border/60">
+                      <p className="text-xs text-muted-foreground">Vehicle Type</p>
+                      <p className="font-semibold text-foreground">
                         {captain?.vehicles?.vehicleType || captain?.vehicle?.vehicleType || "-"}
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border">
-                      <p className="text-xs text-gray-500">Plate</p>
-                      <p className="font-semibold text-gray-900">
+                    <div className="p-4 rounded-[var(--radius)] border border-border/60">
+                      <p className="text-xs text-muted-foreground">Plate</p>
+                      <p className="font-semibold text-foreground">
                         {captain?.vehicles?.plate || captain?.vehicle?.plate || "-"}
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border">
-                      <p className="text-xs text-gray-500">Color</p>
-                      <p className="font-semibold text-gray-900">
+                    <div className="p-4 rounded-[var(--radius)] border border-border/60">
+                      <p className="text-xs text-muted-foreground">Color</p>
+                      <p className="font-semibold text-foreground">
                         {captain?.vehicles?.color || captain?.vehicle?.color || "-"}
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border">
-                      <p className="text-xs text-gray-500">Capacity</p>
-                      <p className="font-semibold text-gray-900">
+                    <div className="p-4 rounded-[var(--radius)] border border-border/60">
+                      <p className="text-xs text-muted-foreground">Capacity</p>
+                      <p className="font-semibold text-foreground">
                         {captain?.vehicles?.capacity ?? captain?.vehicle?.capacity ?? "-"}
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border">
-                      <p className="text-xs text-gray-500">Status</p>
-                      <p className="font-semibold text-gray-900">{captain?.status || "-"}</p>
+                    <div className="p-4 rounded-[var(--radius)] border border-border/60">
+                      <p className="text-xs text-muted-foreground">Status</p>
+                      <p className="font-semibold text-foreground">{captain?.status || "-"}</p>
                     </div>
                   </div>
 

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 
 export default function Register() {
   const [selected, setSelected] = useState("");
@@ -14,80 +17,81 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-
-      {/* NAVBAR */}
-      <nav className="w-full bg-black text-white px-6 py-4 flex items-center">
-        <div className="text-2xl font-bold tracking-tight">Uber</div>
-      </nav>
-
-      {/* MAIN CONTENT */}
-      <div className="max-w-md mx-auto mt-14 px-6">
-
-        {/* FORM WRAPPER WITH BORDER */}
-        <div className="border border-gray-300 rounded-xl p-6 shadow-sm">
-
-          <h2 className="text-3xl font-semibold mb-2">Get started</h2>
-          <p className="text-gray-600 mb-8">Begin your journey with Uber</p>
-
-          {/* BUTTONS */}
-          <div className="space-y-4 mb-6">
-            <button
-              onClick={() => setSelected("rider")}
-              className={`w-full py-3 rounded-lg text-lg font-medium transition 
-                border 
-                ${
-                  selected === "rider"
-                    ? "bg-black text-white border-black"
-                    : "bg-white text-black border-gray-300"
-                }
-              `}
-            >
-              Register as a Rider
-            </button>
-
-            <button
-              onClick={() => setSelected("captain")}
-              className={`w-full py-3 rounded-lg text-lg font-medium transition 
-                border
-                ${
-                  selected === "captain"
-                    ? "bg-black text-white border-black"
-                    : "bg-white text-black border-gray-300"
-                }
-              `}
-            >
-              Register as a Captain
-            </button>
-          </div>
-
-          {/* TERMS LIST */}
-          <div className="mb-6 text-sm text-gray-600 space-y-2">
-            <p className="font-medium text-black">Before you continue:</p>
-
-            <ul className="list-disc pl-6 space-y-1">
-              <li>You agree to Uber’s Terms & Conditions</li>
-              <li>You consent to receive SMS for verification</li>
-              <li>You confirm you are above 18</li>
-              <li>Your data will be used for account verification</li>
-            </ul>
-          </div>
-
-          {/* CONTINUE BUTTON */}
-          <button
-            onClick={handleContinue}
-            disabled={!selected}
-            className={`w-full py-3 rounded-lg text-lg font-medium transition 
-              ${
-                selected
-                  ? "bg-black text-white hover:bg-gray-900"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }
-            `}
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+        <div className="relative hidden items-center justify-center overflow-hidden bg-secondary lg:flex">
+          <motion.div
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0"
           >
-            Continue
-          </button>
+            <div className="absolute -left-12 bottom-12 h-72 w-72 rounded-full bg-muted/70 blur-3xl" />
+            <div className="absolute right-8 top-10 h-56 w-56 rounded-full bg-accent/70 blur-3xl" />
+          </motion.div>
+          <div className="relative z-10 max-w-md space-y-4 p-10">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              Ride-X Onboarding
+            </p>
+            <h1 className="text-3xl font-semibold">
+              Choose your Ride-X experience.
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Premium ride booking for riders and captains built to move faster.
+            </p>
+          </div>
+        </div>
 
+        <div className="flex items-center justify-center px-6 py-12">
+          <Card className="w-full max-w-md bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Create your Ride-X account</CardTitle>
+              <CardDescription>Select a role to continue.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setSelected("rider")}
+                  className={
+                    selected === "rider"
+                      ? "w-full rounded-[var(--radius)] border border-border bg-foreground px-4 py-3 text-left text-sm font-semibold text-background"
+                      : "w-full rounded-[var(--radius)] border border-border/60 bg-card/70 px-4 py-3 text-left text-sm"
+                  }
+                >
+                  Register as Rider
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelected("captain")}
+                  className={
+                    selected === "captain"
+                      ? "w-full rounded-[var(--radius)] border border-border bg-foreground px-4 py-3 text-left text-sm font-semibold text-background"
+                      : "w-full rounded-[var(--radius)] border border-border/60 bg-card/70 px-4 py-3 text-left text-sm"
+                  }
+                >
+                  Register as Captain
+                </button>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                By continuing, you agree to the Ride-X terms and privacy policy.
+              </div>
+
+              <Button
+                className="w-full"
+                onClick={handleContinue}
+                disabled={!selected}
+              >
+                Continue
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                Already with Ride-X?{" "}
+                <Link to="/login" className="text-foreground hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

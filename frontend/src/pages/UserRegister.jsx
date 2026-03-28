@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
-import {useNavigate} from "react-router-dom";
-import {saveAccessToken} from "../helper/Token.js"
-
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { saveAccessToken } from "../helper/Token.js";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 
 export default function UserRegister() {
   const navigate = useNavigate();
@@ -10,14 +13,13 @@ export default function UserRegister() {
     firstName: "",
     lastName: "",
     email: "",
-    password: ""
+    password: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  // Handle input changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -25,14 +27,12 @@ export default function UserRegister() {
     });
   };
 
-  // Form submit logic
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
     setSuccessMsg("");
 
-    // 🔥 Create payload according to backend requirement
     const payload = {
       fullname: {
         firstname: formData.firstName,
@@ -50,16 +50,14 @@ export default function UserRegister() {
 
       setSuccessMsg("Account created successfully!");
       saveAccessToken(res.data.token);
-      navigate("/login")
+      navigate("/login");
 
-      // Reset form
       setFormData({
         firstName: "",
         lastName: "",
         email: "",
-        password: ""
+        password: "",
       });
-
     } catch (error) {
       console.log(error);
       setErrorMsg(
@@ -71,85 +69,89 @@ export default function UserRegister() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-
-      {/* NAVBAR */}
-      <nav className="w-full bg-black text-white px-6 py-4 flex items-center">
-        <div className="text-2xl font-bold tracking-tight">Uber</div>
-      </nav>
-
-      {/* FORM CONTAINER */}
-      <div className="max-w-md mx-auto mt-14 px-6">
-        <form
-          onSubmit={handleSubmit}
-          className="border border-gray-300 rounded-xl p-6 shadow-sm"
-        >
-          <h2 className="text-3xl font-semibold mb-2">Create your account</h2>
-          <p className="text-gray-600 mb-8">Sign up to get started</p>
-
-          {/* FIRST NAME */}
-          <input
-            type="text"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            placeholder="First Name"
-            className="w-full border border-gray-300 px-4 py-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* LAST NAME */}
-          <input
-            type="text"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            placeholder="Last Name"
-            className="w-full border border-gray-300 px-4 py-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* EMAIL */}
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email"
-            className="w-full border border-gray-300 px-4 py-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* PASSWORD */}
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Password"
-            className="w-full border border-gray-300 px-4 py-3 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-black"
-            required
-          />
-
-          {/* ERROR MESSAGE */}
-          {errorMsg && (
-            <p className="text-red-600 mb-3 text-sm">{errorMsg}</p>
-          )}
-
-          {/* SUCCESS MESSAGE */}
-          {successMsg && (
-            <p className="text-green-600 mb-3 text-sm">{successMsg}</p>
-          )}
-
-          {/* SIGN UP BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white py-3 rounded-lg text-lg font-medium hover:bg-gray-900 transition"
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+        <div className="relative hidden items-center justify-center overflow-hidden bg-secondary lg:flex">
+          <motion.div
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0"
           >
-            {loading ? "Creating account..." : "Sign Up"}
-          </button>
-        </form>
+            <div className="absolute -left-12 top-10 h-72 w-72 rounded-full bg-muted/70 blur-3xl" />
+            <div className="absolute bottom-8 right-6 h-64 w-64 rounded-full bg-accent/70 blur-3xl" />
+          </motion.div>
+          <div className="relative z-10 max-w-md space-y-4 p-10">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              Rider Profile
+            </p>
+            <h1 className="text-3xl font-semibold">Create your Ride-X rider hub.</h1>
+            <p className="text-sm text-muted-foreground">
+              Save favorites, unlock smart fare alerts, and book rides instantly.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center px-6 py-12">
+          <Card className="w-full max-w-md bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Create rider account</CardTitle>
+              <CardDescription>Join Ride-X in under a minute.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="First name"
+                  required
+                />
+                <Input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Last name"
+                  required
+                />
+                <Input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  required
+                />
+                <Input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  required
+                />
+
+                {errorMsg && (
+                  <p className="text-xs text-destructive">{errorMsg}</p>
+                )}
+                {successMsg && (
+                  <p className="text-xs text-foreground">{successMsg}</p>
+                )}
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Creating account..." : "Sign Up"}
+                </Button>
+                <p className="text-center text-xs text-muted-foreground">
+                  Already with Ride-X?{" "}
+                  <Link to="/login" className="text-foreground hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

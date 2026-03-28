@@ -1,21 +1,30 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
 
 export default function CommonLogin() {
   const navigate = useNavigate();
 
-  const [role, setRole] = useState("user"); // default
+  const [role, setRole] = useState("user");
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  // Handle email / password input
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -23,14 +32,12 @@ export default function CommonLogin() {
     });
   };
 
-  // Handle login submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
     setSuccessMsg("");
 
-    // Determine API endpoint based on selected role
     const endpoint =
       role === "user"
         ? "http://localhost:8080/api/v1/users/login"
@@ -41,29 +48,25 @@ export default function CommonLogin() {
 
       setSuccessMsg("Login successful!");
 
-      // store token
       if (res.data?.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", role);
       }
 
-      // Redirect to different dashboards
       if (role === "user") {
-        navigate("/homepage-user");
+        navigate("/dashboard");
       } else {
         navigate("/homepage-captain");
       }
 
-      // Reset form
       setFormData({
         email: "",
-        password: ""
+        password: "",
       });
-
     } catch (error) {
       console.log(error);
       setErrorMsg(
-        error?.response?.data?.message || "Invalid email or password!"
+        error?.response?.data?.message || "Invalid email or password!",
       );
     }
 
@@ -71,69 +74,89 @@ export default function CommonLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-
-      {/* NAVBAR */}
-      <nav className="w-full bg-black text-white px-10 py-4 flex items-center h-20">
-        <div className="text-2xl font-bold tracking-tight">Ride-X</div>
-      </nav>
-
-      {/* LOGIN FORM */}
-      <div className="max-w-md mx-auto mt-14 px-6">
-        <form
-          onSubmit={handleSubmit}
-          className="border border-gray-300 rounded-xl p-6 shadow-sm"
-        >
-          <h2 className="text-3xl font-semibold mb-2">Login</h2>
-          <p className="text-gray-600 mb-8">Select role and continue</p>
-
-          {/* ROLE SELECTOR */}
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full border border-gray-300 px-4 py-3 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-black"
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+        <div className="relative hidden items-center justify-center overflow-hidden bg-secondary lg:flex">
+          <motion.div
+            animate={{ opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0"
           >
-            <option value="user">Login as User</option>
-            <option value="captain">Login as Captain</option>
-          </select>
+            <div className="absolute -left-10 top-12 h-72 w-72 rounded-full bg-muted/70 blur-3xl" />
+            <div className="absolute bottom-10 right-4 h-64 w-64 rounded-full bg-accent/70 blur-3xl" />
+          </motion.div>
+          <div className="relative z-10 max-w-md space-y-4 p-10">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              Ride-X Access
+            </p>
+            <h1 className="text-3xl font-semibold">
+              Your premium mobility console starts here.
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Centralize ride scheduling, live tracking, and concierge support
+              in one dashboard.
+            </p>
+          </div>
+        </div>
 
-          {/* EMAIL INPUT */}
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email"
-            className="w-full border border-gray-300 px-4 py-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-black"
-            required
-          />
+        <div className="flex items-center justify-center px-6 py-12">
+          <Card className="w-full max-w-md bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Sign in to Ride-X</CardTitle>
+              <CardDescription>
+                Choose a role and continue to your dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="h-11 w-full rounded-[var(--radius)] border border-input bg-background px-3 text-sm text-foreground"
+                >
+                  <option value="user">Login as Rider</option>
+                  <option value="captain">Login as Captain</option>
+                </select>
+                <Input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  required
+                />
+                <Input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  required
+                />
 
-          {/* PASSWORD INPUT */}
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Password"
-            className="w-full border border-gray-300 px-4 py-3 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-black"
-            required
-          />
+                {errorMsg && (
+                  <p className="text-xs text-destructive">{errorMsg}</p>
+                )}
+                {successMsg && (
+                  <p className="text-xs text-foreground">{successMsg}</p>
+                )}
 
-          {/* ERROR MESSAGE */}
-          {errorMsg && <p className="text-red-600 mb-3 text-sm">{errorMsg}</p>}
-
-          {/* SUCCESS MESSAGE */}
-          {successMsg && <p className="text-green-600 mb-3 text-sm">{successMsg}</p>}
-
-          {/* LOGIN BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white py-3 rounded-lg text-lg font-medium hover:bg-gray-900 transition"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Logging in..." : "Login"}
+                </Button>
+                <p className="text-center text-xs text-muted-foreground">
+                  New to Ride-X ? Sign up now for faster, smarter ride booking.
+                  <Link
+                    to="/register"
+                    className="block text-foreground hover:underline mt-1"
+                  >
+                    Create your account
+                  </Link>
+                </p>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
