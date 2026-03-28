@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { saveAccessToken } from "../helper/Token.js";
 import { Button } from "../components/ui/button";
+import { apiUrl } from "../lib/apiUrl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 
@@ -44,7 +45,7 @@ export default function UserRegister() {
 
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/v1/users/register",
+        apiUrl("/api/v1/users/register"),
         payload
       );
 

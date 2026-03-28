@@ -6,6 +6,7 @@ import "leaflet/dist/leaflet.css";
 import { io } from "socket.io-client";
 import { decodeAccessToken } from "../helper/Token";
 import useBookRide from "../hooks/useBookRide";
+import { API_BASE_URL, apiUrl } from "../lib/apiUrl";
 
 export default function UserHomePage() {
   const [pickup, setPickup] = useState("");
@@ -46,7 +47,7 @@ export default function UserHomePage() {
   const fetchSuggestions = async (query) => {
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/v1/maps/get-suggestions",
+        apiUrl("/api/v1/maps/get-suggestions"),
         { params: { input: query } }
       );
       return res.data.data || [];
@@ -122,7 +123,7 @@ export default function UserHomePage() {
     if (!userId) return;
 
     const socketUrl =
-      import.meta.env.VITE_SOCKET_URL || "http://localhost:8080";
+      import.meta.env.VITE_SOCKET_URL || API_BASE_URL;
 
     socketRef.current = io(socketUrl, {
       withCredentials: false,
@@ -221,7 +222,7 @@ export default function UserHomePage() {
     try {
       setFareLoading(true);
       const res = await axios.get(
-        "http://localhost:8080/api/v1/rides/get-fare",
+        apiUrl("/api/v1/rides/get-fare"),
         {
           params: { pickup, destination, vehicleType },
         }

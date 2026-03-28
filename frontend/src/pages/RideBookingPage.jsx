@@ -8,6 +8,7 @@ import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { useToast } from "../components/ui/toast";
 import { getAccessToken } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 const rideOptions = [
   { id: "motorcycle", label: "Bike", eta: "2 min" },
@@ -31,7 +32,7 @@ export default function RideBookingPage() {
   const fetchSuggestions = async (query) => {
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/v1/maps/get-suggestions",
+        apiUrl("/api/v1/maps/get-suggestions"),
         { params: { input: query } }
       );
       return res.data?.data || [];
@@ -91,7 +92,7 @@ export default function RideBookingPage() {
     setFareLoading(true);
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/v1/rides/get-fare",
+        apiUrl("/api/v1/rides/get-fare"),
         {
           params: {
             pickup,
@@ -137,7 +138,7 @@ export default function RideBookingPage() {
     setLoading(true);
     try {
       await axios.post(
-        "http://localhost:8080/api/v1/rides/create",
+        apiUrl("/api/v1/rides/create"),
         {
           pickup,
           destination: drop,

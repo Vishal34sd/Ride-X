@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import CaptainNavbar from "../components/CaptainNavbar";
 import { getAccessToken } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 const TABS = [
   { key: "pending", label: "Pending" },
@@ -61,7 +62,7 @@ export default function CaptainRides() {
       setErrorMsg("");
       try {
         const ridesRes = await axios.get(
-          "http://localhost:8080/api/v1/rides/captain-rides",
+          apiUrl("/api/v1/rides/captain-rides"),
           { headers }
         );
         setRides(Array.isArray(ridesRes.data?.rides) ? ridesRes.data.rides : []);
@@ -98,7 +99,7 @@ export default function CaptainRides() {
     setCompletingRideId(rideId);
     try {
       await axios.post(
-        "http://localhost:8080/api/v1/rides/end-ride",
+        apiUrl("/api/v1/rides/end-ride"),
         { rideId },
         {
           headers: {
@@ -108,7 +109,7 @@ export default function CaptainRides() {
       );
 
       const ridesRes = await axios.get(
-        "http://localhost:8080/api/v1/rides/captain-rides",
+        apiUrl("/api/v1/rides/captain-rides"),
         {
           headers: {
             Authorization: `Bearer ${token}`,

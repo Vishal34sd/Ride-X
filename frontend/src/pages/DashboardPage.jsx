@@ -13,6 +13,7 @@ import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
 import { getAccessToken } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 const getMonthKey = (date) => `${date.getFullYear()}-${date.getMonth()}`;
 
@@ -58,8 +59,8 @@ export default function DashboardPage() {
       setLoading(true);
       try {
         const results = await Promise.allSettled([
-          axios.get("http://localhost:8080/api/v1/rides/user-rides", { headers }),
-          axios.get("http://localhost:8080/api/v1/rides/latest", { headers }),
+          axios.get(apiUrl("/api/v1/rides/user-rides"), { headers }),
+          axios.get(apiUrl("/api/v1/rides/latest"), { headers }),
         ]);
 
         const ridesResult = results[0];
@@ -113,10 +114,10 @@ export default function DashboardPage() {
     const fetchCoordinates = async () => {
       try {
         const [pickupRes, destinationRes] = await Promise.all([
-          axios.get("http://localhost:8080/api/v1/maps/get-coordinates", {
+          axios.get(apiUrl("/api/v1/maps/get-coordinates"), {
             params: { address: latestRide.pickup },
           }),
-          axios.get("http://localhost:8080/api/v1/maps/get-coordinates", {
+          axios.get(apiUrl("/api/v1/maps/get-coordinates"), {
             params: { address: latestRide.destination },
           }),
         ]);
@@ -171,7 +172,7 @@ export default function DashboardPage() {
       setFareLoading(true);
       try {
         const res = await axios.get(
-          "http://localhost:8080/api/v1/rides/get-fare",
+          apiUrl("/api/v1/rides/get-fare"),
           {
             params: {
               pickup: latestRide.pickup,

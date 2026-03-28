@@ -3,6 +3,7 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import { getAccessToken } from "../helper/Token";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../lib/apiUrl";
 
 export default function UserProfile() {
   const [user, setUser] = useState(null);
@@ -21,7 +22,7 @@ export default function UserProfile() {
       try {
         setLoading(true);
         setError(null);
-        const res = await axios.get("http://localhost:8080/api/v1/users/profile", {
+        const res = await axios.get(apiUrl("/api/v1/users/profile"), {
           headers: {
             Authorization: `Bearer ${token}`,
           },

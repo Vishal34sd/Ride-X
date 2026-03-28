@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import { getAccessToken } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 export default function StatusPage() {
   const [rides, setRides] = useState([]);
@@ -22,7 +23,7 @@ export default function StatusPage() {
 
       try {
         const res = await axios.get(
-          "http://localhost:8080/api/v1/rides/user-rides",
+          apiUrl("/api/v1/rides/user-rides"),
           {
             headers: {
               Authorization: `Bearer ${token}`,

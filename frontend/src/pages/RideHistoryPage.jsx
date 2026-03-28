@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Input } from "../components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { getAccessToken } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 const statusVariant = {
   completed: "success",
@@ -36,7 +37,7 @@ export default function RideHistoryPage() {
       setErrorMsg("");
       try {
         const res = await axios.get(
-          "http://localhost:8080/api/v1/rides/user-rides",
+          apiUrl("/api/v1/rides/user-rides"),
           { headers }
         );
         setRides(Array.isArray(res.data?.rides) ? res.data.rides : []);
