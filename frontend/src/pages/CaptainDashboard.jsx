@@ -3,6 +3,7 @@ import CaptainNavbar from "../components/CaptainNavbar";
 import { io } from "socket.io-client";
 import axios from "axios";
 import { decodeAccessToken, getAccessToken } from "../helper/Token";
+import { API_BASE_URL, apiUrl } from "../lib/apiUrl";
 
 export default function CaptainDashboard() {
   const [ride, setRide] = useState(null);
@@ -20,7 +21,7 @@ export default function CaptainDashboard() {
     if (!captainId) return;
 
     const socketUrl =
-      import.meta.env.VITE_SOCKET_URL || "http://localhost:8080";
+      import.meta.env.VITE_SOCKET_URL || API_BASE_URL;
 
     socketRef.current = io(socketUrl, {
       withCredentials: false,
@@ -64,7 +65,7 @@ export default function CaptainDashboard() {
     setRidesError("");
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/v1/rides/captain-rides",
+        apiUrl("/api/v1/rides/captain-rides"),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -96,7 +97,7 @@ export default function CaptainDashboard() {
     try {
       const token = getAccessToken();
       await axios.post(
-        "http://localhost:8080/api/v1/rides/confirm",
+        apiUrl("/api/v1/rides/confirm"),
         { rideId: ride._id },
         {
           headers: {
@@ -121,7 +122,7 @@ export default function CaptainDashboard() {
     try {
       const token = getAccessToken();
       await axios.post(
-        "http://localhost:8080/api/v1/rides/decline",
+        apiUrl("/api/v1/rides/decline"),
         { rideId: ride._id },
         {
           headers: {
@@ -151,7 +152,7 @@ export default function CaptainDashboard() {
     setCompletingRideId(rideId);
     try {
       await axios.post(
-        "http://localhost:8080/api/v1/rides/end-ride",
+        apiUrl("/api/v1/rides/end-ride"),
         { rideId },
         {
           headers: {

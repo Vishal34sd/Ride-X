@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { apiUrl } from "../lib/apiUrl";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
@@ -38,10 +39,9 @@ export default function CommonLogin() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    const endpoint =
-      role === "user"
-        ? "http://localhost:8080/api/v1/users/login"
-        : "http://localhost:8080/api/v1/captains/login";
+    const endpoint = role === "user"
+      ? apiUrl("/api/v1/users/login")
+      : apiUrl("/api/v1/captains/login");
 
     try {
       const res = await axios.post(endpoint, formData);

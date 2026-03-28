@@ -6,6 +6,7 @@ import {
   getAccessToken,
   removeAccessToken,
 } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 const Navbar = () => {
   const location = useLocation();
@@ -40,7 +41,7 @@ const Navbar = () => {
     const fetchProfile = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:8080/api/v1/users/profile",
+          apiUrl("/api/v1/users/profile"),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -64,6 +65,7 @@ const Navbar = () => {
     try {
       if (token) {
         await axios.get("http://localhost:8080/api/v1/users/logout", {
+        await axios.get(apiUrl("/api/v1/users/logout"), {
           headers: {
             Authorization: `Bearer ${token}`,
           },

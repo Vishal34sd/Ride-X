@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
-import {getAccessToken} from "../helper/Token.js"
+import { getAccessToken } from "../helper/Token.js";
+import { apiUrl } from "../lib/apiUrl";
 export default function useBookRide() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,7 +14,7 @@ export default function useBookRide() {
   const token = getAccessToken();
 
   const res = await axios.post(
-    "http://localhost:8080/api/v1/rides/create",
+    apiUrl("/api/v1/rides/create"),
     {
       pickup,
       destination,

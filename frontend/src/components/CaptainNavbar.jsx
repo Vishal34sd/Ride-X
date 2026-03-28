@@ -6,6 +6,7 @@ import {
   getAccessToken,
   removeAccessToken,
 } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 const CaptainNavbar = () => {
   const location = useLocation();
@@ -52,10 +53,10 @@ const CaptainNavbar = () => {
     const fetchCaptain = async () => {
       try {
         const [profileRes, statsRes] = await Promise.all([
-          axios.get("http://localhost:8080/api/v1/captains/profile", {
+          axios.get(apiUrl("/api/v1/captains/profile"), {
             headers,
           }),
-          axios.get("http://localhost:8080/api/v1/rides/captain-stats", {
+          axios.get(apiUrl("/api/v1/rides/captain-stats"), {
             headers,
           }),
         ]);
@@ -91,7 +92,7 @@ const CaptainNavbar = () => {
     setLoggingOut(true);
     try {
       if (captainToken) {
-        await axios.get("http://localhost:8080/api/v1/captains/logout", {
+        await axios.get(apiUrl("/api/v1/captains/logout"), {
           headers: {
             Authorization: `Bearer ${captainToken}`,
           },

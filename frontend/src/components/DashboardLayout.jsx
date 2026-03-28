@@ -5,6 +5,7 @@ import axios from "axios";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { getAccessToken, removeAccessToken } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard" },
@@ -45,7 +46,7 @@ export default function DashboardLayout({ children, title, description }) {
     const fetchProfile = async () => {
       setUserLoading(true);
       try {
-        const res = await axios.get("http://localhost:8080/api/v1/users/profile", {
+        const res = await axios.get(apiUrl("/api/v1/users/profile"), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -77,7 +78,7 @@ export default function DashboardLayout({ children, title, description }) {
 
     setLogoutLoading(true);
     try {
-      await axios.get("http://localhost:8080/api/v1/users/logout", {
+      await axios.get(apiUrl("/api/v1/users/logout"), {
         headers: {
           Authorization: `Bearer ${token}`,
         },

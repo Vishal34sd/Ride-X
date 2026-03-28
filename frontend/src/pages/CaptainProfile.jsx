@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import CaptainNavbar from "../components/CaptainNavbar";
 import { getAccessToken } from "../helper/Token";
+import { apiUrl } from "../lib/apiUrl";
 
 export default function CaptainProfile() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function CaptainProfile() {
       setErrorMsg("");
       try {
         const profileRes = await axios.get(
-          "http://localhost:8080/api/v1/captains/profile",
+            apiUrl("/api/v1/captains/profile"),
           { headers }
         );
         const captainData = profileRes.data?.captain || null;
@@ -55,7 +56,7 @@ export default function CaptainProfile() {
 
         try {
           const ridesRes = await axios.get(
-            "http://localhost:8080/api/v1/rides/captain-rides",
+              apiUrl("/api/v1/rides/captain-rides"),
             { headers }
           );
           setRides(Array.isArray(ridesRes.data?.rides) ? ridesRes.data.rides : []);
