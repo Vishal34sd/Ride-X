@@ -64,7 +64,6 @@ const Navbar = () => {
 
     try {
       if (token) {
-        await axios.get("http://localhost:8080/api/v1/users/logout", {
         await axios.get(apiUrl("/api/v1/users/logout"), {
           headers: {
             Authorization: `Bearer ${token}`,
