@@ -8,15 +8,11 @@ export const getFareService = async ({ pickup, destination, vehicleType }) => {
     }
 
     const normalizedVehicleType = String(vehicleType || "").toLowerCase().trim();
-
-    // Keep allowed vehicle types consistent with rideValidation
-    // and captainModel (car, motorcycle, auto)
     const allowedVehicles = ["auto", "car", "motorcycle"];
     if (!normalizedVehicleType || !allowedVehicles.includes(normalizedVehicleType)) {
         throw new Error("Invalid or missing vehicle type");
     }
 
-    // base fare and per km for each vehicle
     const baseFare = {
         auto: 30,
         car: 50,
@@ -29,7 +25,6 @@ export const getFareService = async ({ pickup, destination, vehicleType }) => {
         motorcycle: 8,
     };
 
-    // get distance from your map service
     const { distanceMeters , durationSeconds } = await getDistanceAndTime(pickup, destination);
     const distanceKm = distanceMeters / 1000;
 
@@ -53,7 +48,6 @@ export const getFareService = async ({ pickup, destination, vehicleType }) => {
         distanceKm,
         durationSeconds,
         fare,
-        // breakdown values for UI (kept consistent with backend)
         baseFare: roundMoney(selectedBaseFare),
         perKmRate: roundMoney(selectedPerKmRate),
         distanceCharge: roundMoney(distanceCharge),
@@ -62,7 +56,6 @@ export const getFareService = async ({ pickup, destination, vehicleType }) => {
 };
 
 export const generateOtp = () => {
-    // 6 digit numeric OTP between 100000 and 999999
     const min = 100000;
     const max = 999999;
     const otp = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -159,8 +152,8 @@ export const endRideService = async({rideId , captain})=>{
         throw new Error("Ride not found for this captain");
     }
 
-    if(ride.status !== "ongoing"){
-        throw new Error("Ride must be ongoing to be completed");
+    if(ride.status !== "ongoing" && ride.status !== "confirmed"){
+        throw new Error("Ride must be confirmed or ongoing to be completed");
     }
 
     ride.status = "completed";

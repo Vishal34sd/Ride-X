@@ -30,6 +30,7 @@ export default function CaptainRides() {
   const [activeTab, setActiveTab] = useState("pending");
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [completingRideId, setCompletingRideId] = useState(null);
 
   const tabCounts = useMemo(() => {
     const counts = { pending: 0, ongoing: 0, completed: 0 };
@@ -85,6 +86,45 @@ export default function CaptainRides() {
 
     fetchRides();
   }, [navigate]);
+
+  const handleCompleteRide = async (rideId) => {
+    if (!rideId || completingRideId) return;
+    const token = getAccessToken();
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    setCompletingRideId(rideId);
+    try {
+      await axios.post(
+        "http://localhost:8080/api/v1/rides/end-ride",
+        { rideId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const ridesRes = await axios.get(
+        "http://localhost:8080/api/v1/rides/captain-rides",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setRides(Array.isArray(ridesRes.data?.rides) ? ridesRes.data.rides : []);
+    } catch (e) {
+      console.error("Failed to complete ride", e);
+      const msg =
+        e?.response?.data?.message || "Failed to complete ride.";
+      setErrorMsg(msg);
+    } finally {
+      setCompletingRideId(null);
+    }
+  };
 
   const tabClass = (tabKey) =>
     tabKey === activeTab
@@ -178,6 +218,20 @@ export default function CaptainRides() {
                               {typeof ride?.fare === "number" ? `₹${ride.fare}` : "-"}
                             </span>
                           </div>
+
+                          {(ride?.status === "ongoing" ||
+                            ride?.status === "confirmed") && (
+                            <button
+                              type="button"
+                              onClick={() => handleCompleteRide(ride._id)}
+                              disabled={completingRideId === ride._id}
+                              className="w-full rounded-[var(--radius)] border border-foreground/20 bg-foreground py-2 text-sm font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {completingRideId === ride._id
+                                ? "Completing..."
+                                : "Mark as Completed"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}

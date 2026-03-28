@@ -14,7 +14,6 @@ connectToDb();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Allow frontend dev server to call APIs with cookies/JWT if needed
 app.use(
 	cors({
 		origin: ["http://localhost:5173", "http://127.0.0.1:5173"],

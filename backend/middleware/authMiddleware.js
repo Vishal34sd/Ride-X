@@ -17,7 +17,6 @@ export const authUser = async(req , res , next)=>{
             return next();
         }
         catch(e){
-            console.log(e);
             return res.status(401).json({ message: "Unauthorized" });
         }
 }
@@ -41,7 +40,6 @@ export const authCaptain = async (req, res, next) => {
         req.captain = captain;
         return next();
     } catch (e) {
-        console.log(e);
         return res.status(401).json({ message: "Unauthorized" });
     }
 };

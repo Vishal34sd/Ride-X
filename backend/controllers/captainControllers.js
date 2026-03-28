@@ -2,7 +2,6 @@ import captainModel from "../models/captainModel.js";
 import { validationResult } from "express-validator";
 import { createCaptain } from "../services/captainServices.js";
 
-// REGISTER
 const registerCaptain = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -37,12 +36,10 @@ const registerCaptain = async (req, res) => {
       token,
     });
   } catch (e) {
-    console.error("REGISTER ERROR:", e);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-// LOGIN
 const loginCaptain = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -70,12 +67,10 @@ const loginCaptain = async (req, res) => {
       token,
     });
   } catch (e) {
-    console.error("LOGIN ERROR:", e);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-// PROFILE
 const getCaptainProfile = async (req, res) => {
   try {
     const captain = await captainModel
@@ -88,12 +83,10 @@ const getCaptainProfile = async (req, res) => {
 
     return res.status(200).json({ captain });
   } catch (e) {
-    console.error("Failed to fetch captain profile", e);
     return res.status(500).json({ message: "Failed to fetch captain profile" });
   }
 };
 
-// LOGOUT
 const logoutCaptain = async (req, res) => {
   res.clearCookie("token");
   return res.status(200).json({ message: "Logged out successfully" });

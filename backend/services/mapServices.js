@@ -5,8 +5,6 @@ import captainModel from "../models/captainModel.js"
 const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org";
 const ORS_KEY = process.env.ORS_API_KEY;
 
-
-// 1️⃣ Get Coordinates (address → lat,lng)
 export const getAddressCoordinates = async (address) => {
     const url = `${NOMINATIM_BASE_URL}/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
 
@@ -30,7 +28,6 @@ export const getAddressCoordinates = async (address) => {
         };
 
     } catch (error) {
-        console.log("Coordinate Error:", error.message);
         throw error;
     }
 };
@@ -71,7 +68,6 @@ export const getDistanceAndTime = async (origin, destination) => {
         };
 
     } catch (error) {
-        console.log("Distance-Time Error:", error.message);
         throw error;
     }
 };
@@ -94,7 +90,6 @@ export const getAutoCompleteResults = async (input) => {
             },
         });
 
-        // ORS returns GeoJSON FeatureCollection
         const features = response.data?.features || [];
 
         return features.map((feature) => ({
@@ -104,21 +99,12 @@ export const getAutoCompleteResults = async (input) => {
         }));
 
     } catch (error) {
-        console.log("Suggestion Error:", error?.response?.status, error?.response?.data || error.message);
         throw error;
     }
 };
 
 export const getCaptainInTheRadius = async (lat, lng, radiusKm, filters = {}) => {
-    // NOTE: the current `location` field is not stored as a GeoJSON
-    // point with a 2dsphere index, so the $geoWithin query will
-    // never match. For now, return all connected captains so that
-    // real-time ride flow works while you test the app.
-    //
-    // Later, you can change `location` to a [lng, lat] array with
-    // a 2dsphere index and implement true radius filtering.
     const query = {
-        // only captains that currently have an active socket
         socketId: { $exists: true, $ne: null },
     };
 

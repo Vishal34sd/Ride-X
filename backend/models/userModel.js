@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     password : {
         type : String ,
         required : true ,
-        select : false // bcz we dont want to send it 
+        select : false
 
     },
     socketId : {

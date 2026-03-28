@@ -6,30 +6,17 @@ import rideModel from "../models/rideModel.js";
 
 export const createRide = async (req, res) => {
   try {
-    console.log("====== CREATE RIDE HIT ======");
-
-    // 1️⃣ Validation check
     const errors = validationResult(req);
-    console.log("VALIDATION ERRORS:", errors.array());
 
     if (!errors.isEmpty()) {
-      console.log("❌ Validation failed");
       return res.status(400).json({ errors: errors.array() });
     }
 
-    // 2️⃣ Check auth user
-    console.log("REQ.USER:", req.user);
-
     if (!req.user) {
-      console.log("❌ req.user is NULL");
       return res.status(401).json({ message: "User not authenticated" });
     }
 
     const { pickup, destination, vehicleType } = req.body;
-    console.log("REQUEST BODY:", { pickup, destination, vehicleType });
-
-    // 3️⃣ Create ride
-    console.log("Creating ride for user:", req.user._id);
 
     const ride = await createRideService({
       user: req.user._id,
@@ -38,20 +25,8 @@ export const createRide = async (req, res) => {
       vehicleType,
       status: "pending",
     });
-
-    console.log("✅ Ride created:", ride);
-
-    // 4️⃣ Send response early (your current logic)
     res.status(201).json({ ride });
-    console.log("🚀 Response sent to client");
-
-    // 5️⃣ Get pickup coordinates
-    console.log("Fetching coordinates for pickup:", pickup);
     const pickupCoordinates = await getAddressCoordinates(pickup);
-    console.log("Pickup coordinates:", pickupCoordinates);
-
-    // 6️⃣ Find nearby captains
-    console.log("Searching captains within 2km...");
     const captains = await getCaptainInTheRadius(
       pickupCoordinates.lat,
       pickupCoordinates.lng,
@@ -59,27 +34,14 @@ export const createRide = async (req, res) => {
       { vehicleType }
     );
 
-    console.log("Nearby captains found:", captains.length);
-
     if (!captains.length) {
-      console.log("⚠️ No captains available nearby");
       return;
     }
 
-    // 7️⃣ Populate ride
     const populatedRide = await rideModel
       .findById(ride._id)
       .populate("user", "firstname lastname email");
-
-    console.log("Populated ride:", populatedRide);
-
-    // 8️⃣ Emit socket event
     captains.forEach((captain) => {
-      console.log(
-        `Captain ${captain._id} socketId:`,
-        captain.socketId
-      );
-
       if (captain.socketId) {
         sendMessageToSocketId(captain.socketId, {
           event: "ride-confirmed",
@@ -92,13 +54,9 @@ export const createRide = async (req, res) => {
             user: populatedRide.user,
           },
         });
-
-        console.log("📡 Ride sent to captain:", captain._id);
       }
     });
-
   } catch (error) {
-    console.error("🔥 CREATE RIDE ERROR:", error);
     return res.status(500).json({ message: "Failed to create ride" });
   }
 };
@@ -111,7 +69,6 @@ export const getFare = async(req, res)=>{
 
     const { pickup , destination, vehicleType } = req.query ;
     try{
-    console.log("GET FARE QUERY:", { pickup, destination, vehicleType });
       const {distanceKm , durationSeconds , fare, baseFare, perKmRate, distanceCharge, subtotal} = await getFareService({ pickup , destination, vehicleType });
         res.status(200).json({
             fareData: {
@@ -126,7 +83,6 @@ export const getFare = async(req, res)=>{
         });
     }
     catch(e){
-      console.log("GET FARE ERROR:", e);
       const message = e?.message || "Fare calculation failed";
       res.status(500).json({ message });
     }
@@ -153,7 +109,6 @@ export const confirmRide = async (req, res) => {
 
     res.status(200).json({ rideData: ride });
   } catch (error) {
-    console.log(error);
     const message = error?.message || "Ride confirmation failed";
     const status = message.includes("does not match") ? 400 : 500;
     res.status(status).json({ message });
@@ -190,7 +145,6 @@ export const declineRide = async (req, res) => {
 
     return res.status(200).json({ rideData: ride });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Ride decline failed" });
   }
 };
@@ -212,7 +166,6 @@ export const startRide = async(req , res)=>{
         return res.status(200).json({rideData : ride});
     }
     catch(e){
-        console.log(e);
     }
 }
 
@@ -233,7 +186,6 @@ export const endRide = async(req , res)=>{
         return res.status(200).json({rideData : ride});
     }
     catch(e){
-        console.log(e);
     }
 }
 
@@ -250,7 +202,6 @@ export const getLatestRide = async (req, res) => {
 
     return res.status(200).json({ ride });
   } catch (error) {
-    console.error("Failed to fetch latest ride", error);
     return res.status(500).json({ message: "Failed to fetch latest ride" });
   }
 };
@@ -268,7 +219,6 @@ export const getUserRides = async (req, res) => {
 
     return res.status(200).json({ rides });
   } catch (error) {
-    console.error("Failed to fetch user rides", error);
     return res.status(500).json({ message: "Failed to fetch user rides" });
   }
 };
@@ -285,7 +235,6 @@ export const getCaptainRideStats = async (req, res) => {
 
     return res.status(200).json({ totalRides });
   } catch (error) {
-    console.error("Failed to fetch captain ride stats", error);
     return res
       .status(500)
       .json({ message: "Failed to fetch captain ride stats" });
@@ -306,7 +255,6 @@ export const getCaptainRides = async (req, res) => {
 
     return res.status(200).json({ rides });
   } catch (error) {
-    console.error("Failed to fetch captain rides", error);
     return res.status(500).json({ message: "Failed to fetch captain rides" });
   }
 };
