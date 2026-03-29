@@ -187,7 +187,22 @@ export default function RideBookingPage() {
                 value={pickup}
                 onChange={handlePickupChange}
                 placeholder="Pickup location"
+                className="pr-10"
               />
+              {pickup ? (
+                <button
+                  type="button"
+                  aria-label="Clear pickup location"
+                  onClick={() => {
+                    setPickup("");
+                    setPickupSuggestions([]);
+                    setFareData(null);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition hover:text-foreground"
+                >
+                  X
+                </button>
+              ) : null}
               {pickupSuggestions.length > 0 && (
                 <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-[var(--radius)] border border-border/60 bg-card shadow-lg">
                   {pickupSuggestions.map((item) => (
@@ -211,7 +226,22 @@ export default function RideBookingPage() {
                 value={drop}
                 onChange={handleDropChange}
                 placeholder="Drop-off location"
+                className="pr-10"
               />
+              {drop ? (
+                <button
+                  type="button"
+                  aria-label="Clear drop-off location"
+                  onClick={() => {
+                    setDrop("");
+                    setDropSuggestions([]);
+                    setFareData(null);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition hover:text-foreground"
+                >
+                  X
+                </button>
+              ) : null}
               {dropSuggestions.length > 0 && (
                 <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-[var(--radius)] border border-border/60 bg-card shadow-lg">
                   {dropSuggestions.map((item) => (
