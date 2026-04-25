@@ -26,6 +26,47 @@ const formatDelta = (current, previous) => {
   return `${sign}${change.toFixed(1)}%`;
 };
 
+const formatDeltaValue = (current, previous, suffix = "") => {
+  if (!Number.isFinite(current) || !Number.isFinite(previous)) {
+    return "--";
+  }
+  const change = current - previous;
+  if (Math.abs(change) < 0.05) return "0" + suffix;
+  const sign = change > 0 ? "+" : "";
+  return `${sign}${change.toFixed(1)}${suffix}`;
+};
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const getAveragePickupMinutes = (rides) => {
+  const withDuration = rides.filter((ride) => Number.isFinite(Number(ride?.duration)));
+  if (withDuration.length === 0) return null;
+
+  const avgDurationMinutes =
+    withDuration.reduce((sum, ride) => sum + Number(ride.duration), 0) /
+    withDuration.length /
+    60;
+
+  const estimatedPickup = 2 + avgDurationMinutes * 0.25;
+  return clamp(estimatedPickup, 2.5, 8.5);
+};
+
+const getRideScore = (rides) => {
+  if (!rides.length) return null;
+
+  const total = rides.length;
+  const completed = rides.filter((ride) => ride.status === "completed").length;
+  const completionRate = total ? completed / total : 0;
+  const avgPickup = getAveragePickupMinutes(rides) ?? 6;
+
+  let score = 4.1 + completionRate * 0.7;
+  if (avgPickup <= 4) score += 0.2;
+  else if (avgPickup <= 6) score += 0.1;
+  else score -= 0.1;
+
+  return clamp(score, 3.5, 5.0);
+};
+
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
   iconUrl: markerIcon,
@@ -203,6 +244,8 @@ export default function DashboardPage() {
     let previousCount = 0;
     let currentSpend = 0;
     let previousSpend = 0;
+    const currentRides = [];
+    const previousRides = [];
 
     rides.forEach((ride) => {
       if (!ride?.createdAt) return;
@@ -212,17 +255,28 @@ export default function DashboardPage() {
       if (rideKey === currentKey) {
         currentCount += 1;
         currentSpend += fare;
+        currentRides.push(ride);
       } else if (rideKey === previousKey) {
         previousCount += 1;
         previousSpend += fare;
+        previousRides.push(ride);
       }
     });
+
+    const currentPickup = getAveragePickupMinutes(currentRides);
+    const previousPickup = getAveragePickupMinutes(previousRides);
+    const currentScore = getRideScore(currentRides);
+    const previousScore = getRideScore(previousRides);
 
     return {
       currentCount,
       previousCount,
       currentSpend,
       previousSpend,
+      currentPickup,
+      previousPickup,
+      currentScore,
+      previousScore,
     };
   }, [rides]);
 
@@ -237,8 +291,26 @@ export default function DashboardPage() {
       value: loading ? "--" : `₹${stats.currentSpend.toFixed(2)}`,
       delta: loading ? "--" : formatDelta(stats.currentSpend, stats.previousSpend),
     },
-    { label: "Avg. pickup", value: "4.2 min", delta: "-0.6" },
-    { label: "Ride score", value: "4.9", delta: "+0.1" },
+    {
+      label: "Avg. pickup",
+      value:
+        loading || !Number.isFinite(stats.currentPickup)
+          ? "--"
+          : `${stats.currentPickup.toFixed(1)} min`,
+      delta: loading
+        ? "--"
+        : formatDeltaValue(stats.currentPickup, stats.previousPickup, " min"),
+    },
+    {
+      label: "Ride score",
+      value:
+        loading || !Number.isFinite(stats.currentScore)
+          ? "--"
+          : stats.currentScore.toFixed(1),
+      delta: loading
+        ? "--"
+        : formatDeltaValue(stats.currentScore, stats.previousScore, ""),
+    },
   ];
 
   const latestStatus = latestRide?.status || "pending";

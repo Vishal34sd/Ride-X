@@ -3,10 +3,23 @@ import Navbar from "../components/Navbar";
 import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { io } from "socket.io-client";
 import { decodeAccessToken } from "../helper/Token";
 import useBookRide from "../hooks/useBookRide";
 import { API_BASE_URL, apiUrl } from "../lib/apiUrl";
+
+const defaultMarkerIcon = L.icon({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 export default function UserHomePage() {
   const [pickup, setPickup] = useState("");
@@ -26,8 +39,11 @@ export default function UserHomePage() {
   const [pickupCoords, setPickupCoords] = useState(null);
   const [destinationCoords, setDestinationCoords] = useState(null);
 
-  const [rideNotification, setRideNotification] = useState(null);
+  const [rideNotifications, setRideNotifications] = useState([]);
   const [currentRide, setCurrentRide] = useState(null);
+  const [rideStatus, setRideStatus] = useState(null); // null | "pending" | "ongoing" | "confirmed" | "declined" | "completed"
+  const [captainLocation, setCaptainLocation] = useState(null);
+  const [captainDistance, setCaptainDistance] = useState(null);
 
   const mapRef = useRef(null);
   const pickupMarkerRef = useRef(null);
@@ -43,6 +59,14 @@ export default function UserHomePage() {
 
   const getFormStorageKey = () =>
     userId ? `ride_form_${userId}` : "ride_form_guest";
+
+  const pushRideNotification = (notification) => {
+    setRideNotifications((prev) => {
+      const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const next = [{ id, createdAt: Date.now(), ...notification }, ...prev];
+      return next.slice(0, 5);
+    });
+  };
 
   const fetchSuggestions = async (query) => {
     try {
@@ -140,13 +164,44 @@ export default function UserHomePage() {
 
     socketRef.current.on("ride-confirmed", (rideData) => {
       console.log("✅ Ride confirmed for user:", rideData);
-      setRideNotification({ type: "confirmed", ride: rideData });
+      pushRideNotification({ type: "confirmed", ride: rideData });
       setCurrentRide(rideData);
+      setRideStatus("ongoing");
     });
 
     socketRef.current.on("ride-declined", (rideData) => {
       console.log("⚠️ Ride declined for user:", rideData);
-      setRideNotification({ type: "declined", ride: rideData });
+      pushRideNotification({ type: "declined", ride: rideData });
+      setRideStatus("declined");
+    });
+
+    socketRef.current.on("ride-ended", (rideData) => {
+      console.log("🏁 Ride completed:", rideData);
+      pushRideNotification({ type: "completed", ride: rideData });
+      setRideStatus("completed");
+      setCaptainLocation(null);
+      setCaptainDistance(null);
+    });
+
+    socketRef.current.on("no-captains-available", (data) => {
+      console.log("⚠️ No captains:", data);
+      pushRideNotification({ type: "no-captains", ride: null });
+      setRideStatus(null);
+    });
+
+    // Live captain location — calculate distance from captain to pickup
+    socketRef.current.on("captain-location-update", (data) => {
+      const { captainLocation: loc } = data;
+      setCaptainLocation(loc);
+      if (loc && pickupCoords) {
+        const toRad = (deg) => (deg * Math.PI) / 180;
+        const R = 6371;
+        const dLat = toRad(loc.lat - pickupCoords.lat);
+        const dLng = toRad(loc.lng - pickupCoords.lng);
+        const a = Math.sin(dLat/2)**2 + Math.cos(toRad(pickupCoords.lat)) * Math.cos(toRad(loc.lat)) * Math.sin(dLng/2)**2;
+        const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        setCaptainDistance(Math.round(dist * 10) / 10);
+      }
     });
 
     socketRef.current.on("disconnect", () => {
@@ -160,15 +215,6 @@ export default function UserHomePage() {
     };
   }, [userId]);
 
-  useEffect(() => {
-    if (!rideNotification) return;
-
-    const timer = setTimeout(() => {
-      setRideNotification(null);
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [rideNotification]);
 
   useEffect(() => {
     const map = L.map("map").setView([28.6139, 77.209], 12);
@@ -191,15 +237,15 @@ export default function UserHomePage() {
       map.removeLayer(destinationMarkerRef.current);
     if (routeRef.current) map.removeLayer(routeRef.current);
 
-    pickupMarkerRef.current = L.marker([
-      pickupCoords.lat,
-      pickupCoords.lng,
-    ]).addTo(map);
+    pickupMarkerRef.current = L.marker(
+      [pickupCoords.lat, pickupCoords.lng],
+      { icon: defaultMarkerIcon }
+    ).addTo(map);
 
-    destinationMarkerRef.current = L.marker([
-      destinationCoords.lat,
-      destinationCoords.lng,
-    ]).addTo(map);
+    destinationMarkerRef.current = L.marker(
+      [destinationCoords.lat, destinationCoords.lng],
+      { icon: defaultMarkerIcon }
+    ).addTo(map);
 
     routeRef.current = L.polyline(
       [
@@ -323,7 +369,8 @@ export default function UserHomePage() {
       });
 
       setCurrentRide(ride);
-      setRideNotification({ type: "pending", ride });
+      setRideStatus("pending");
+      pushRideNotification({ type: "requested", ride });
 
       const totalMinutes = Math.floor(fareData.durationSeconds / 60);
       const hours = Math.floor(totalMinutes / 60);
@@ -516,32 +563,79 @@ Time: ${hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`}`
             )}
           </div>
 
-          {rideNotification && (
-            <div
-              className={`mt-4 p-4 rounded-xl shadow-sm text-sm font-medium ${
-                rideNotification.type === "confirmed"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : rideNotification.type === "pending"
-                  ? "bg-yellow-50 text-yellow-800 border border-yellow-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
-              }`}
-            >
-              {rideNotification.type === "confirmed" && (
-                <p>
-                  ✅ Your ride has been <b>confirmed</b> by a captain.
-                </p>
+          {/* ── Live Ride Status Tracker ── */}
+          {rideStatus && (
+            <div className="mt-4 space-y-3">
+              {/* Status indicator */}
+              <div className={`rounded-xl border p-4 text-sm font-medium shadow-sm ${
+                rideStatus === "pending" ? "border-yellow-200/70 bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-200 text-yellow-900" :
+                rideStatus === "ongoing" || rideStatus === "confirmed" ? "border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-emerald-100 to-emerald-200 text-emerald-900" :
+                rideStatus === "declined" ? "border-rose-200/70 bg-gradient-to-br from-rose-50 via-rose-100 to-rose-200 text-rose-900" :
+                "border-blue-200/70 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-blue-900"
+              }`}>
+                {rideStatus === "pending" && <p>🔍 Searching for nearby captains...</p>}
+                {(rideStatus === "ongoing" || rideStatus === "confirmed") && <p>🚗 Ride accepted! Captain is on the way.</p>}
+                {rideStatus === "declined" && <p>❌ Ride rejected by captain. Please try again.</p>}
+                {rideStatus === "completed" && <p>🏁 Ride completed! Thank you for riding.</p>}
+              </div>
+
+              {/* Captain distance tracker */}
+              {(rideStatus === "ongoing" || rideStatus === "confirmed") && captainDistance !== null && (
+                <div className="rounded-xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-white p-4">
+                  <p className="text-xs uppercase tracking-wide text-emerald-700 mb-1">Captain is approximately</p>
+                  <p className="text-2xl font-bold text-emerald-900">
+                    {captainDistance} km <span className="text-sm font-normal">away</span>
+                  </p>
+                  {captainLocation && (
+                    <p className="text-xs text-emerald-600 mt-1">
+                      📍 Live: {captainLocation.lat.toFixed(4)}, {captainLocation.lng.toFixed(4)}
+                    </p>
+                  )}
+                </div>
               )}
-              {rideNotification.type === "pending" && (
-                <p>
-                  ⏳ Your ride is <b>pending</b>. Waiting for a captain to
-                  accept.
-                </p>
-              )}
-              {rideNotification.type === "declined" && (
-                <p>
-                  ⚠️ Your ride was <b>declined</b>. Please try booking again.
-                </p>
-              )}
+            </div>
+          )}
+
+          {/* ── Ride Notifications ── */}
+          {rideNotifications.length > 0 && (
+            <div className="mt-4 space-y-3">
+              {rideNotifications.map((item) => {
+                const isPositive = item.type === "confirmed" || item.type === "requested";
+                const baseStyle = isPositive
+                  ? "border-emerald-200/70 text-emerald-900"
+                  : "border-rose-200/70 text-rose-900";
+                const gradientStyle = isPositive
+                  ? "bg-gradient-to-br from-emerald-50 via-emerald-100 to-emerald-200"
+                  : "bg-gradient-to-br from-rose-50 via-rose-100 to-rose-200";
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`rounded-xl border p-4 text-sm font-medium shadow-sm ${baseStyle} ${gradientStyle}`}
+                  >
+                    {item.type === "confirmed" && (
+                      <p>✅ Ride confirmed. Your captain is on the way.</p>
+                    )}
+                    {item.type === "requested" && (
+                      <p>🚕 Ride requested. Matching you with nearby captains.</p>
+                    )}
+                    {item.type === "declined" && (
+                      <p>❌ Ride rejected by captain. Please try again.</p>
+                    )}
+                    {item.type === "completed" && (
+                      <p>🏁 Ride completed. Thank you for riding!</p>
+                    )}
+                    {item.type === "no-captains" && (
+                      <p>⚠️ No captains available nearby. Try again shortly.</p>
+                    )}
+                    {item.ride?.pickup && item.ride?.destination && (
+                      <p className="mt-2 text-xs opacity-80">
+                        {item.ride.pickup} → {item.ride.destination}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 

@@ -14,6 +14,9 @@ const PORT = process.env.PORT || 8080;
 
 const server = http.createServer(app);
 
+// Initialize Socket.IO for real-time communication
 initializeSocket(server);
 
-server.listen(PORT);
+server.listen(PORT, () => {
+    console.log(`[Server] Ride-X running on port ${PORT} | Socket.IO ready`);
+});

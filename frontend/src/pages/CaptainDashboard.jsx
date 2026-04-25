@@ -27,16 +27,46 @@ export default function CaptainDashboard() {
       withCredentials: false,
     });
 
+    let locationInterval = null;
+
     socketRef.current.on("connect", () => {
       console.log("✅ Captain socket connected:", socketRef.current.id);
 
+      // Register this captain's socket on the backend
       socketRef.current.emit("join", {
         userId: captainId,
         userType: "captain",
       });
+
+      // ── Start sending live GPS location every 4 seconds ──
+      // The backend stores this in MongoDB (GeoJSON format) so that
+      // when a rider requests a ride, the $near geospatial query can
+      // find this captain if they're within 10 km of the pickup.
+      locationInterval = setInterval(() => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              socketRef.current.emit("update-location", {
+                captainId,
+                location: {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude,
+                },
+              });
+            },
+            (err) => {
+              console.warn("📍 Geolocation error:", err.message);
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+          );
+        }
+      }, 4000);
     });
 
-    socketRef.current.on("ride-confirmed", (rideData) => {
+    // ── Listen for new ride requests broadcast by the backend ──
+    // This fires when a rider creates a ride and this captain is
+    // within 10 km, has matching vehicleType, and is available.
+    socketRef.current.on("new-ride-request", (rideData) => {
       console.log("🚨 New Ride Request:", rideData);
       setRide(rideData);
     });
@@ -46,6 +76,9 @@ export default function CaptainDashboard() {
     });
 
     return () => {
+      if (locationInterval) {
+        clearInterval(locationInterval);
+      }
       if (socketRef.current) {
         socketRef.current.disconnect();
       }

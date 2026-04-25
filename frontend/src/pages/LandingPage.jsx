@@ -125,7 +125,10 @@ export default function LandingPage() {
         >
           <div className="space-y-6">
             <Badge variant="outline">Premium mobility SaaS</Badge>
-            <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
+            <h1
+              className="text-4xl font-semibold leading-tight md:text-5xl"
+              style={{ fontFamily: "'Saira', sans-serif" }}
+            >
               Book Rides Smarter with Ride-X
             </h1>
             <p className="text-lg text-muted-foreground">
